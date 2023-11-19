@@ -1,4 +1,4 @@
-package com.application.views;
+package com.application.views.student;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -7,8 +7,9 @@ import java.awt.GridBagLayout;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import com.application.models.Student;
-import com.application.models.User;
+import com.application.models.users.Student;
+import com.application.models.users.Teacher;
+import com.application.models.users.User;
 
 public class HorarioView extends JPanel {
     private Student context;

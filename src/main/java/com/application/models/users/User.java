@@ -1,4 +1,4 @@
-package com.application.models;
+package com.application.models.users;
 
 import com.utils.CustomList;
 
@@ -20,7 +20,7 @@ public abstract class User {
     public enum Roles {
         Student,
         Teacher,
-        Admin
+        Aspirante
     }
 
     public long getId() {

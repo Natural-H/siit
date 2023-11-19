@@ -6,10 +6,14 @@ import java.util.function.Function;
 public class CustomList<T> {
     public Node<T> first = null;
     public Node<T> last = null;
-
     private Node<T> creator = null;
+    public int size = 0;
 
     public CustomList() {
+    }
+
+    public CustomList(T[] items) {
+        for (T item : items) add(item);
     }
 
     public void add(T item) {
@@ -27,14 +31,7 @@ public class CustomList<T> {
             last.next = creator;
             last = creator;
         }
-    }
-
-    public void insertBefore() {
-
-    }
-
-    public void insertAfter() {
-
+        size++;
     }
 
     public void forEach(Consumer<T> function) {
@@ -58,7 +55,18 @@ public class CustomList<T> {
         return null;
     }
 
-    public T findValue(Function<T, Boolean> finderFunction) {
+    public T get(int index) {
+        Node<T> it = first;
+
+        for (int i = 0; it != null; i++) {
+            if (index == i) return it.value;
+            it = it.next;
+        }
+
+        return null;
+    }
+
+    public T findFirstValue(Function<T, Boolean> finderFunction) {
         Node<T> it = first;
 
         while (it != null) {
@@ -69,5 +77,61 @@ public class CustomList<T> {
         }
 
         return null;
+    }
+
+    public <R> CustomList<R> map(Function<T, R> mappingFunction) {
+        if (first == null)
+            return null;
+
+        CustomList<R> customList = new CustomList<>();
+        Node<T> it = first;
+
+        while (it != null) {
+            customList.add(mappingFunction.apply(it.value));
+            it = it.next;
+        }
+
+        return customList;
+    }
+
+    public CustomList<T> filter(Function<T, Boolean> finderFunction) {
+        CustomList<T> allFinds = new CustomList<>();
+        Node<T> it = first;
+
+        while (it != null) {
+            if (finderFunction.apply(it.value))
+                allFinds.add(it.value);
+
+            it = it.next;
+        }
+
+        return allFinds;
+    }
+
+    public T[] findAllValues(Function<T, Boolean> finderFunction) {
+        return filter(finderFunction).toArray();
+    }
+
+    public void clear() {
+        this.first = null;
+        this.last = null;
+        this.creator = null;
+        size = 0;
+    }
+
+    public T[] toArray() {
+        if (first == null)
+            return null;
+
+        @SuppressWarnings("unchecked")
+        T[] array = (T[]) new Object[size];
+        Node<T> it = first;
+
+        for (int i = 0; it != null; i++) {
+            array[i] = it.value;
+            it = it.next;
+        }
+
+        return array;
     }
 }

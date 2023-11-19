@@ -2,21 +2,25 @@ package com.application.views;
 
 import javax.swing.*;
 
-import com.application.models.Horario;
-import com.application.models.Materia;
-import com.application.models.Student;
-import com.application.models.Teacher;
-import com.application.models.User;
-import com.application.models.MateriaFactory.Semestre;
-import com.application.models.User.Roles;
+import com.application.models.materia.Group;
+import com.application.models.materia.Horario;
+import com.application.models.materia.Materia;
+import com.application.models.users.Advance;
+import com.application.models.users.Student;
+import com.application.models.users.Teacher;
+import com.application.models.users.User;
+import com.application.models.users.User.Roles;
+import com.application.views.student.StudentView;
+import com.application.views.teacher.SelectGroupsView;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.util.Arrays;
+
+import static com.application.models.users.Advance.advanceHashMap;
 
 public class LoginView extends JPanel {
-    private GridBagConstraints gbc = new GridBagConstraints();
-    private JTextField txtUser = new JTextField(20);
-    private JPasswordField txtPassword = new JPasswordField(20);
+    private final JTextField txtUser = new JTextField(20);
+    private final JPasswordField txtPassword = new JPasswordField(20);
 
     public LoginView() {
         setLayout(new GridBagLayout());
@@ -24,9 +28,11 @@ public class LoginView extends JPanel {
                 BorderFactory.createEmptyBorder(5, 5, 5, 5),
                 BorderFactory.createTitledBorder("Inicio de sesión")));
 
+        loadAdvancesAndMaterias();
         loadUsers();
-        loadMaterias();
+        loadGroups();
 
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = 1;
         gbc.gridwidth = 1;
@@ -61,11 +67,20 @@ public class LoginView extends JPanel {
     }
 
     private void login() {
-        User user = User.users.findValue(usr -> usr.getName().equals(txtUser.getText()));
-        if (user.getPassword().equals(txtPassword.getText())) {
-            ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();
+        User user = User.users.findFirstValue(usr -> usr.getName().equals(txtUser.getText()));
+        if (Arrays.equals(user.getPassword().toCharArray(), txtPassword.getPassword())) {
+            SwingUtilities.getWindowAncestor(this).dispose();
             JFrame frame = new JFrame("App");
-            frame.setContentPane(new StudentView(user));
+
+            switch (user.getRol()) {
+                case Student:
+                    frame.setContentPane(new StudentView(user));
+                    break;
+                case Teacher:
+                    frame.setContentPane(new SelectGroupsView(user));
+                    break;
+            }
+
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -75,63 +90,79 @@ public class LoginView extends JPanel {
 
     private void loadUsers() {
         User.users.add(new Student(0, "a", "a", Roles.Student, 1));
+        User.users.add(new Teacher(1, "b", "b", Roles.Teacher));
     }
 
-    private void loadMaterias() {
-        Materia.factory.materias = new HashMap<>();
-        Materia.factory.materias.put(Semestre.semestre1, new Materia[] {
-                new Materia(new Teacher[] {
-                        new Teacher(0, "Maestro 1", "Some password", Roles.Teacher),
-                        new Teacher(1, "Maestro 2", "Some password", Roles.Teacher),
-                        new Teacher(2, "Maestro 3", "Some password", Roles.Teacher),
-                },
-                        new Horario[] {
-                                new Horario() {
-                                    {
-                                        this.begin = "07:00";
-                                        this.end = "08:00";
-                                    }
-                                },
-                                new Horario() {
-                                    {
-                                        this.begin = "08:00";
-                                        this.end = "09:00";
-                                    }
-                                },
-                                new Horario() {
-                                    {
-                                        this.begin = "09:00";
-                                        this.end = "10:00";
-                                    }
-                                }
-                        },
-                        "Fundamentos de Programación", 5, 1),
-                new Materia(new Teacher[] {
-                        new Teacher(0, "Maestro 1", "Some password", Roles.Teacher),
-                        new Teacher(1, "Maestro 2", "Some password", Roles.Teacher),
-                        new Teacher(2, "Maestro 3", "Some password", Roles.Teacher),
-                },
-                        new Horario[] {
-                                new Horario() {
-                                    {
-                                        this.begin = "07:00";
-                                        this.end = "08:00";
-                                    }
-                                },
-                                new Horario() {
-                                    {
-                                        this.begin = "08:00";
-                                        this.end = "09:00";
-                                    }
-                                },
-                                new Horario() {
-                                    {
-                                        this.begin = "09:00";
-                                        this.end = "10:00";
-                                    }
-                                }
-                        },
-                        "Cálculo Diferencial", 5, 1),
+
+    private void loadGroups() {
+        Group.groups.add(new Group(0, "1YY",
+                (Teacher) User.users
+                        .findFirstValue(t -> t.getId() == 1), 1,
+                Materia.plainMateriaCustomList
+                        .findFirstValue(m -> m.codeName.equals("CodeName1")),
+                new Horario() {
+                    {
+                        this.days = new String[]{Days[0], Days[1], Days[2], Days[3], Days[4]};
+                        this.horario = Horarios[0];
+                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7"};
+                    }
+                }));
+
+        Group.groups.forEach(group -> {
+            User.users.filter(user -> user.getRol().equals(Roles.Teacher)).forEach(teacher -> {
+                if (group.teacher.getId() == teacher.getId())
+                    ((Teacher) teacher).groups.add(group);
+            });
+        });
+    }
+
+    private void loadAdvancesAndMaterias() {
+        advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName1", "Fundamentos de Programación", 5, 1, null),
+                        new Materia("CodeName2", "Cálculo Diferencial", 5, 1, null),
+                        new Materia("CodeName3", "Ética", 4, 1, null),
+                };
+            }
+        });
+        advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
+                                new Materia[]{
+                                        Materia.plainMateriaCustomList.findFirstValue(
+                                                value -> value.codeName.equals("CodeName1")
+                                        )
+                                }),
+                        new Materia("CodeName5", "Cálculo Integral", 5, 2,
+                                new Materia[]{
+                                        Materia.plainMateriaCustomList.findFirstValue(
+                                                value -> value.codeName.equals("CodeName2")
+                                        )
+                                }),
+                        new Materia("CodeName6", "Química", 4, 2, null),
+                };
+            }
+        });
+        advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName7", "Estructura de Datos", 5, 3,
+                                new Materia[]{
+                                        Materia.plainMateriaCustomList.findFirstValue(
+                                                value -> value.codeName.equals("CodeName4")
+                                        )
+                                }),
+                        new Materia("CodeName8", "Cálculo Vectorial", 5, 3,
+                                new Materia[]{
+                                        Materia.plainMateriaCustomList.findFirstValue(
+                                                value -> value.codeName.equals("CodeName5")
+                                        )
+                                }),
+                        new Materia("CodeName9", "Cultura Empresarial", 4, 3, null),
+                };
+            }
         });
     }
 }
