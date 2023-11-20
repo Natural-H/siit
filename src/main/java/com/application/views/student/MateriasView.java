@@ -1,5 +1,6 @@
 package com.application.views.student;
 
+import com.application.models.materia.AssignedMateria;
 import com.application.models.users.Advance;
 import com.application.models.users.Student;
 import com.application.models.users.User;
@@ -30,10 +31,19 @@ public class MateriasView extends JPanel {
 
         String[][] plainMaterias = new String[Advance.Semestre.values().length][3];
 
+//        for (int i = 0; i < Advance.Semestre.values().length; i++) {
+//            Advance advance = Advance.advanceHashMap.get(Advance.Semestre.values()[i]);
+//            for (int j = 0; j < advance.materias.length; j++)
+//                plainMaterias[j][i] = advance.materias[j].nombre;
+//        }
+
         for (int i = 0; i < Advance.Semestre.values().length; i++) {
-            Advance advance = Advance.advanceHashMap.get(Advance.Semestre.values()[i]);
-            for (int j = 0; j < advance.materias.length; j++)
-                plainMaterias[j][i] = advance.materias[j].nombre;
+            int finalI = i;
+            AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray();
+
+            for (int j = 0; j < materias.length; j++) {
+                plainMaterias[j][i] = materias[j].materia.nombre;
+            }
         }
 
         dtm.setDataVector(plainMaterias, new String[]{

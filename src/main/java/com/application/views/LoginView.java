@@ -11,7 +11,7 @@ import com.application.models.users.Teacher;
 import com.application.models.users.User;
 import com.application.models.users.User.Roles;
 import com.application.views.student.StudentView;
-import com.application.views.teacher.SelectGroupsView;
+import com.application.views.teacher.TeacherView;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -77,7 +77,7 @@ public class LoginView extends JPanel {
                     frame.setContentPane(new StudentView(user));
                     break;
                 case Teacher:
-                    frame.setContentPane(new SelectGroupsView(user));
+                    frame.setContentPane(new TeacherView(user));
                     break;
             }
 
@@ -102,18 +102,29 @@ public class LoginView extends JPanel {
                         .findFirstValue(m -> m.codeName.equals("CodeName1")),
                 new Horario() {
                     {
-                        this.days = new String[]{Days[0], Days[1], Days[2], Days[3], Days[4]};
+                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4]};
                         this.horario = Horarios[0];
                         this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7"};
                     }
                 }));
 
-        Group.groups.forEach(group -> {
-            User.users.filter(user -> user.getRol().equals(Roles.Teacher)).forEach(teacher -> {
-                if (group.teacher.getId() == teacher.getId())
-                    ((Teacher) teacher).groups.add(group);
-            });
-        });
+        Group.groups.add(new Group(1, "3YY",
+                (Teacher) User.users
+                        .findFirstValue(t -> t.getId() == 1), 1,
+                Materia.plainMateriaCustomList
+                        .findFirstValue(m -> m.codeName.equals("CodeName7")),
+                new Horario() {
+                    {
+                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4]};
+                        this.horario = Horarios[0];
+                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7"};
+                    }
+                }));
+
+        Group.groups.forEach(group -> User.users.filter(user -> user.getRol().equals(Roles.Teacher)).forEach(teacher -> {
+            if (group.teacher.getId() == teacher.getId())
+                ((Teacher) teacher).groups.add(group);
+        }));
     }
 
     private void loadAdvancesAndMaterias() {

@@ -1,5 +1,6 @@
 package com.utils;
 
+import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -123,8 +124,10 @@ public class CustomList<T> {
         if (first == null)
             return null;
 
+//        @SuppressWarnings("unchecked")
+//        T[] array = (T[]) new Object[size];
         @SuppressWarnings("unchecked")
-        T[] array = (T[]) new Object[size];
+        T[] array = (T[]) Array.newInstance(first.value.getClass(), size);
         Node<T> it = first;
 
         for (int i = 0; it != null; i++) {

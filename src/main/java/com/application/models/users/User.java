@@ -20,7 +20,8 @@ public abstract class User {
     public enum Roles {
         Student,
         Teacher,
-        Aspirante
+        Aspirante,
+        Admin
     }
 
     public long getId() {
