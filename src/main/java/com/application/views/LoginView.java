@@ -95,10 +95,10 @@ public class LoginView extends JPanel {
 
 
     private void loadGroups() {
-        Group.groups.add(new Group(0, "1YY",
+        Group.groups.add(new Group(0, Group.groupNames[0],
                 (Teacher) User.users
                         .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.plainMateriaCustomList
+                Materia.materias
                         .findFirstValue(m -> m.codeName.equals("CodeName1")),
                 new Horario() {
                     {
@@ -108,10 +108,10 @@ public class LoginView extends JPanel {
                     }
                 }));
 
-        Group.groups.add(new Group(1, "3YY",
+        Group.groups.add(new Group(1, Group.groupNames[8],
                 (Teacher) User.users
                         .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.plainMateriaCustomList
+                Materia.materias
                         .findFirstValue(m -> m.codeName.equals("CodeName7")),
                 new Horario() {
                     {
@@ -142,13 +142,13 @@ public class LoginView extends JPanel {
                 materias = new Materia[]{
                         new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
                                 new Materia[]{
-                                        Materia.plainMateriaCustomList.findFirstValue(
+                                        Materia.materias.findFirstValue(
                                                 value -> value.codeName.equals("CodeName1")
                                         )
                                 }),
                         new Materia("CodeName5", "Cálculo Integral", 5, 2,
                                 new Materia[]{
-                                        Materia.plainMateriaCustomList.findFirstValue(
+                                        Materia.materias.findFirstValue(
                                                 value -> value.codeName.equals("CodeName2")
                                         )
                                 }),
@@ -161,13 +161,13 @@ public class LoginView extends JPanel {
                 materias = new Materia[]{
                         new Materia("CodeName7", "Estructura de Datos", 5, 3,
                                 new Materia[]{
-                                        Materia.plainMateriaCustomList.findFirstValue(
+                                        Materia.materias.findFirstValue(
                                                 value -> value.codeName.equals("CodeName4")
                                         )
                                 }),
                         new Materia("CodeName8", "Cálculo Vectorial", 5, 3,
                                 new Materia[]{
-                                        Materia.plainMateriaCustomList.findFirstValue(
+                                        Materia.materias.findFirstValue(
                                                 value -> value.codeName.equals("CodeName5")
                                         )
                                 }),

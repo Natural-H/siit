@@ -46,6 +46,7 @@ public class AllGroupsView extends JPanel {
     }
 
     public static void loadInfo() {
+        dtm.setRowCount(0);
         Object[][] data = new Object[Group.groups.size][9];
 
         for (int i = 0; i < Group.groups.size; i++) {

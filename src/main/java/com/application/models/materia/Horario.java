@@ -19,7 +19,26 @@ public class Horario {
             "Sábado"
     };
 
-    public String[] days;
-    public String[] places;
-    public String horario;
+    public static String[] Places = new String[] {
+            "SC1",
+            "SC2",
+            "SC3",
+            "SC4",
+            "SC5",
+            "SC6",
+            "SC7",
+            "SC8",
+            "SC9",
+            "SC10",
+            "SC11",
+            "SC12",
+            "LC1",
+            "LC2",
+            "LC3",
+            "LC4",
+    };
+
+    public String[] days = new String[6];
+    public String[] places = new String[6];
+    public String horario = "";
 }

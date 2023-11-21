@@ -3,7 +3,7 @@ package com.application.models.materia;
 import com.utils.CustomList;
 
 public class Materia {
-    public static CustomList<Materia> plainMateriaCustomList = new CustomList<>();
+    public static CustomList<Materia> materias = new CustomList<>();
     public Materia[] dependencies;
     public String codeName;
     public String nombre;
@@ -16,6 +16,11 @@ public class Materia {
         this.credits = credits;
         this.semestre = semestre;
         this.dependencies = dependencies;
-        plainMateriaCustomList.add(this);
+        materias.add(this);
+    }
+
+    @Override
+    public String toString() {
+        return nombre;
     }
 }

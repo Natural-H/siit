@@ -13,6 +13,7 @@ public class Group {
     public int semestre;
     public Materia materia;
     public Horario horario;
+    public int maxSize;
 
     public Group(int id, String name, Teacher teacher, int semestre, Materia materia, Horario horario) {
         this.id = id;
@@ -21,5 +22,21 @@ public class Group {
         this.semestre = semestre;
         this.materia = materia;
         this.horario = horario;
+        this.maxSize = 30;
     }
+
+    public static String[] groupNames = {
+            "1Y1",
+            "1Y2",
+            "1Y3",
+            "1Y4",
+            "2Y1",
+            "2Y2",
+            "2Y3",
+            "2Y4",
+            "3Y1",
+            "3Y2",
+            "3Y3",
+            "3Y4",
+    };
 }
