@@ -10,6 +10,8 @@ import com.utils.swing.MultiLineTableCellRenderer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class SelectGroupsView extends JPanel {
     private Student student;
@@ -44,7 +46,7 @@ public class SelectGroupsView extends JPanel {
             Group group = availableGroups.get(i);
 
             data[i][0] = group.name;
-            data[i][1] = new String[]{group.materia.nombre, group.teacher.getName()};
+            data[i][1] = new String[]{group.materia.name, group.teacher.getName()};
             data[i][2] = Integer.toString(group.semestre);
 
             for (int j = 3; j < 8; j++)
@@ -53,6 +55,15 @@ public class SelectGroupsView extends JPanel {
 
             dtm.addRow(data[i]);
         }
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+
+                handleJoinGroup(e);
+            }
+        });
 
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = 0;
@@ -64,5 +75,20 @@ public class SelectGroupsView extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
 
         add(scrollPane, gbc);
+    }
+
+    private void handleJoinGroup(MouseEvent e) {
+        if (e.getClickCount() == 2 && table.getSelectedRow() != -1) {
+            if (JOptionPane.showConfirmDialog(this, "¿Seguro que quieres unirte a este grupo?", "Confirma", JOptionPane.YES_NO_OPTION) != 0)
+                return;
+
+            Group group = Group.groups.findFirstValue(g -> g.name.equals(
+                    dtm.getValueAt(table.getSelectedRow(), 0).toString()
+            ) && g.materia.name.equals(
+                    ((String[])dtm.getValueAt(table.getSelectedRow(), 1))[0]
+            ));
+
+            student.assignMaterias(new Group[] { group });
+        }
     }
 }

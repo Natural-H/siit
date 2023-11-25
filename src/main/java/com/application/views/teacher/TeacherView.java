@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class TeacherView extends JPanel {
     private GridBagConstraints gbc = new GridBagConstraints();
-    private JTabbedPane tabbedPane = new JTabbedPane();
+    private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
 
     public TeacherView(User user) {
         setLayout(new GridBagLayout());

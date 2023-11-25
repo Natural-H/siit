@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class MateriasView extends JPanel {
     private Student context;
@@ -37,18 +39,26 @@ public class MateriasView extends JPanel {
 //                plainMaterias[j][i] = advance.materias[j].nombre;
 //        }
 
-        for (int i = 0; i < Advance.Semestre.values().length; i++) {
-            int finalI = i;
-            AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                super.componentShown(e);
 
-            for (int j = 0; j < materias.length; j++) {
-                plainMaterias[j][i] = materias[j].materia.nombre;
+                for (int i = 0; i < Advance.Semestre.values().length; i++) {
+                    int finalI = i;
+                    AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray();
+
+                    for (int j = 0; j < materias.length; j++) {
+                        plainMaterias[j][i] = materias[j].materia.name + " " + materias[j].state;
+                    }
+                }
+
+                dtm.setDataVector(plainMaterias, new String[]{
+                        "Semestre 1", "Semestre 2", "Semestre 3"
+                });
             }
-        }
-
-        dtm.setDataVector(plainMaterias, new String[]{
-                "Semestre 1", "Semestre 2", "Semestre 3"
         });
+
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);

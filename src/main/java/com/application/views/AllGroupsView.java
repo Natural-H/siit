@@ -2,13 +2,13 @@ package com.application.views;
 
 import com.application.models.materia.Group;
 import com.application.models.materia.Horario;
-import com.application.models.users.Teacher;
-import com.application.models.users.User;
 import com.utils.swing.MultiLineTableCellRenderer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class AllGroupsView extends JPanel {
     private final GridBagConstraints gbc = new GridBagConstraints();
@@ -23,6 +23,14 @@ public class AllGroupsView extends JPanel {
     public AllGroupsView() {
         setLayout(new GridBagLayout());
 
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                super.componentShown(e);
+                loadInfo();
+            }
+        });
+
         dtm.setColumnIdentifiers(new String[]{
                 "Grupo", "Materia", "Semestre", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
         });
@@ -32,7 +40,6 @@ public class AllGroupsView extends JPanel {
         for (int i = 3; i < 8; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
 
         table.setRowHeight(50);
-        loadInfo();
 
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = 0;
@@ -45,7 +52,7 @@ public class AllGroupsView extends JPanel {
         add(scrollPane, gbc);
     }
 
-    public static void loadInfo() {
+    public void loadInfo() {
         dtm.setRowCount(0);
         Object[][] data = new Object[Group.groups.size][9];
 
@@ -53,7 +60,7 @@ public class AllGroupsView extends JPanel {
             Group group = Group.groups.get(i);
 
             data[i][0] = group.name;
-            data[i][1] = new String[]{group.materia.nombre, group.teacher.getName()};
+            data[i][1] = new String[]{group.materia.name, group.teacher.getName()};
             data[i][2] = Integer.toString(group.semestre);
 
             for (int j = 3; j < 8; j++)

@@ -14,6 +14,8 @@ import com.application.views.student.StudentView;
 import com.application.views.teacher.TeacherView;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 
 import static com.application.models.users.Advance.advanceHashMap;
@@ -27,10 +29,6 @@ public class LoginView extends JPanel {
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(5, 5, 5, 5),
                 BorderFactory.createTitledBorder("Inicio de sesión")));
-
-        loadAdvancesAndMaterias();
-        loadUsers();
-        loadGroups();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -67,10 +65,10 @@ public class LoginView extends JPanel {
     }
 
     private void login() {
-        User user = User.users.findFirstValue(usr -> usr.getName().equals(txtUser.getText()));
+        User user = User.users.findFirstValue(usr -> usr.getId() == Integer.parseInt(txtUser.getText()));
         if (Arrays.equals(user.getPassword().toCharArray(), txtPassword.getPassword())) {
             SwingUtilities.getWindowAncestor(this).dispose();
-            JFrame frame = new JFrame("App");
+            JFrame frame = buildFrame();
 
             switch (user.getRol()) {
                 case Student:
@@ -88,92 +86,20 @@ public class LoginView extends JPanel {
         }
     }
 
-    private void loadUsers() {
-        User.users.add(new Student(0, "a", "a", Roles.Student, 1));
-        User.users.add(new Teacher(1, "b", "b", Roles.Teacher));
-    }
-
-
-    private void loadGroups() {
-        Group.groups.add(new Group(0, Group.groupNames[0],
-                (Teacher) User.users
-                        .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.materias
-                        .findFirstValue(m -> m.codeName.equals("CodeName1")),
-                new Horario() {
-                    {
-                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4]};
-                        this.horario = Horarios[0];
-                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7"};
-                    }
-                }));
-
-        Group.groups.add(new Group(1, Group.groupNames[8],
-                (Teacher) User.users
-                        .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.materias
-                        .findFirstValue(m -> m.codeName.equals("CodeName7")),
-                new Horario() {
-                    {
-                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4]};
-                        this.horario = Horarios[0];
-                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7"};
-                    }
-                }));
-
-        Group.groups.forEach(group -> User.users.filter(user -> user.getRol().equals(Roles.Teacher)).forEach(teacher -> {
-            if (group.teacher.getId() == teacher.getId())
-                ((Teacher) teacher).groups.add(group);
-        }));
-    }
-
-    private void loadAdvancesAndMaterias() {
-        advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
-            {
-                materias = new Materia[]{
-                        new Materia("CodeName1", "Fundamentos de Programación", 5, 1, null),
-                        new Materia("CodeName2", "Cálculo Diferencial", 5, 1, null),
-                        new Materia("CodeName3", "Ética", 4, 1, null),
-                };
+    private static JFrame buildFrame() {
+        JFrame frame = new JFrame("App");
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                super.windowClosed(e);
+                JFrame frame = new JFrame("app");
+                frame.setContentPane(new LoginView());
+                frame.setSize(400, 200);
+                frame.setLocationRelativeTo(null);
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                frame.setVisible(true);
             }
         });
-        advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
-            {
-                materias = new Materia[]{
-                        new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
-                                new Materia[]{
-                                        Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName1")
-                                        )
-                                }),
-                        new Materia("CodeName5", "Cálculo Integral", 5, 2,
-                                new Materia[]{
-                                        Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName2")
-                                        )
-                                }),
-                        new Materia("CodeName6", "Química", 4, 2, null),
-                };
-            }
-        });
-        advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
-            {
-                materias = new Materia[]{
-                        new Materia("CodeName7", "Estructura de Datos", 5, 3,
-                                new Materia[]{
-                                        Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName4")
-                                        )
-                                }),
-                        new Materia("CodeName8", "Cálculo Vectorial", 5, 3,
-                                new Materia[]{
-                                        Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName5")
-                                        )
-                                }),
-                        new Materia("CodeName9", "Cultura Empresarial", 4, 3, null),
-                };
-            }
-        });
+        return frame;
     }
 }

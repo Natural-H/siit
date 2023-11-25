@@ -36,14 +36,12 @@ public class Student extends User {
         assigned.clear();
         for (Group group : assignedGroups) {
             groups.add(group);
-            assigned.add(new AssignedMateria() {
-                {
-                    this.materia = group.materia;
-                    this.state = State.IN_COURSE;
-                    this.grades = new Double[10];
-                    this.teacher = group.teacher;
-                }
-            });
+
+            AssignedMateria assign = history.findFirstValue(m -> m.materia.name.equals(group.materia.name));
+            assign.state = State.IN_COURSE;
+            assign.grades = new Double[10];
+            assign.teacher = group.teacher;
+            assigned.add(assign);
         }
     }
 

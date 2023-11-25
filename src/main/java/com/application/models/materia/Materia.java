@@ -6,13 +6,13 @@ public class Materia {
     public static CustomList<Materia> materias = new CustomList<>();
     public Materia[] dependencies;
     public String codeName;
-    public String nombre;
+    public String name;
     public int credits;
     public int semestre;
 
-    public Materia(String codeName, String nombre, int credits, int semestre, Materia[] dependencies) {
+    public Materia(String codeName, String name, int credits, int semestre, Materia[] dependencies) {
         this.codeName = codeName;
-        this.nombre = nombre;
+        this.name = name;
         this.credits = credits;
         this.semestre = semestre;
         this.dependencies = dependencies;
@@ -21,6 +21,6 @@ public class Materia {
 
     @Override
     public String toString() {
-        return nombre;
+        return name;
     }
 }

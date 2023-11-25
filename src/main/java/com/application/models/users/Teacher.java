@@ -8,6 +8,5 @@ public class Teacher extends User {
 
     public Teacher(long id, String name, String password, Roles rol) {
         super(id, name, password, rol);
-        User.users.add(this);
     }
 }

@@ -1,14 +1,24 @@
 package com.application;
 
+import com.application.models.materia.Group;
+import com.application.models.materia.Horario;
+import com.application.models.materia.Materia;
+import com.application.models.users.Advance;
+import com.application.models.users.Student;
+import com.application.models.users.Teacher;
+import com.application.models.users.User;
 import com.application.views.LoginView;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import com.formdev.flatlaf.IntelliJTheme;
 import com.utils.CustomList;
 
 import java.util.Arrays;
+
+import static com.application.models.users.Advance.advanceHashMap;
 
 public class App {
     public static void main(String[] args) {
@@ -29,7 +39,16 @@ public class App {
 
         System.out.println(Arrays.toString(integers.toArray()));
 
+        loadData();
+        IntelliJTheme.setup(App.class.getResourceAsStream(
+                "/themes/nord.theme.json"));
         SwingUtilities.invokeLater(App::showUI);
+    }
+
+    private static void loadData() {
+        loadAdvancesAndMaterias();
+        loadUsers();
+        loadGroups();
     }
 
     private static void showUI() {
@@ -40,4 +59,97 @@ public class App {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setVisible(true);
     }
+
+
+    private static void loadUsers() {
+        User.users.add(new Student(0, "a", "a", User.Roles.Student, 1));
+        User.users.add(new Teacher(1, "Some teacher", "b", User.Roles.Teacher));
+    }
+
+
+    private static void loadGroups() {
+        Group.groups.add(new Group(0, Group.groupNames[0],
+                (Teacher) User.users
+                        .findFirstValue(t -> t.getId() == 1), 1,
+                Materia.materias
+                        .findFirstValue(m -> m.codeName.equals("CodeName1")),
+                new Horario() {
+                    {
+                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4], ""};
+                        this.horario = Horarios[0];
+                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7", ""};
+                    }
+                }));
+
+        Group.groups.add(new Group(1, Group.groupNames[8],
+                (Teacher) User.users
+                        .findFirstValue(t -> t.getId() == 1), 1,
+                Materia.materias
+                        .findFirstValue(m -> m.codeName.equals("CodeName7")),
+                new Horario() {
+                    {
+                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4], ""};
+                        this.horario = Horarios[0];
+                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7", ""};
+                    }
+                }));
+
+        Group.groups.forEach(group -> User.users.filter(
+                        user -> user.getRol().equals(User.Roles.Teacher))
+                .forEach(teacher -> {
+                    if (group.teacher.getId() == teacher.getId())
+                        ((Teacher) teacher).groups.add(group);
+                }));
+    }
+
+    private static void loadAdvancesAndMaterias() {
+        advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName1", "Fundamentos de Programación", 5, 1, null),
+                        new Materia("CodeName2", "Cálculo Diferencial", 5, 1, null),
+                        new Materia("CodeName3", "Ética", 4, 1, null),
+                };
+            }
+        });
+        advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
+                                new Materia[]{
+                                        Materia.materias.findFirstValue(
+                                                value -> value.codeName.equals("CodeName1")
+                                        )
+                                }),
+                        new Materia("CodeName5", "Cálculo Integral", 5, 2,
+                                new Materia[]{
+                                        Materia.materias.findFirstValue(
+                                                value -> value.codeName.equals("CodeName2")
+                                        )
+                                }),
+                        new Materia("CodeName6", "Química", 4, 2, null),
+                };
+            }
+        });
+        advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
+            {
+                materias = new Materia[]{
+                        new Materia("CodeName7", "Estructura de Datos", 5, 3,
+                                new Materia[]{
+                                        Materia.materias.findFirstValue(
+                                                value -> value.codeName.equals("CodeName4")
+                                        )
+                                }),
+                        new Materia("CodeName8", "Cálculo Vectorial", 5, 3,
+                                new Materia[]{
+                                        Materia.materias.findFirstValue(
+                                                value -> value.codeName.equals("CodeName5")
+                                        )
+                                }),
+                        new Materia("CodeName9", "Cultura Empresarial", 4, 3, null),
+                };
+            }
+        });
+    }
+
 }
