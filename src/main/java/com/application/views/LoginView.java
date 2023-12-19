@@ -1,24 +1,14 @@
 package com.application.views;
 
-import javax.swing.*;
-
-import com.application.models.materia.Group;
-import com.application.models.materia.Horario;
-import com.application.models.materia.Materia;
-import com.application.models.users.Advance;
-import com.application.models.users.Student;
-import com.application.models.users.Teacher;
 import com.application.models.users.User;
-import com.application.models.users.User.Roles;
 import com.application.views.student.StudentView;
 import com.application.views.teacher.TeacherView;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
-
-import static com.application.models.users.Advance.advanceHashMap;
 
 public class LoginView extends JPanel {
     private final JTextField txtUser = new JTextField(20);

@@ -43,6 +43,24 @@ public class CustomList<T> {
         }
     }
 
+    public T aggregate(Function3<T, T, T> function) {
+        if (first == null)
+            return null;
+
+        T accum = get(0);
+        for (int i = 1; i < size; i++) accum = function.apply(accum, get(i));
+        return accum;
+    }
+
+    public T aggregate(T seed, Function3<T, T, T> function) {
+        if (first == null || seed == null)
+            return null;
+
+        T accum = seed;
+        for (int i = 0; i < size; i++) accum = function.apply(accum, get(i));
+        return accum;
+    }
+
     public Node<T> findNode(Function<T, Boolean> finderFunction) {
         Node<T> it = first;
 
@@ -136,5 +154,10 @@ public class CustomList<T> {
         }
 
         return array;
+    }
+
+    @FunctionalInterface
+    public interface Function3<T, R, S> {
+        S apply(T t, R r);
     }
 }

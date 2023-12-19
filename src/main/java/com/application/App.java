@@ -31,6 +31,8 @@ public class App {
         integers.forEach(System.out::println);
         System.out.println(integers.findFirstValue(val -> val == 3));
         System.out.println(Arrays.toString(integers.toArray()));
+        System.out.println(integers.aggregate(5, (a, next) -> a * next));
+        System.out.println(integers.aggregate((a, next) -> a * next));
         System.out.println(Arrays.toString(integers.findAllValues(value -> value == 2)));
         System.out.println(Arrays.toString(integers.map(value -> value * 2).toArray()));
         System.out.println(Arrays.toString(integers.map(value -> value * 2).filter(value -> value == 4).toArray()));
