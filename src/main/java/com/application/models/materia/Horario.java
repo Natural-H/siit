@@ -1,6 +1,8 @@
 package com.application.models.materia;
 
-public class Horario {
+import java.io.Serializable;
+
+public class Horario implements Serializable {
     public static String[] Horarios = new String[] {
             "07:00 - 08:00",
             "08:00 - 09:00",

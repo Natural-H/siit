@@ -2,7 +2,9 @@ package com.application.models.users;
 
 import com.utils.CustomList;
 
-public abstract class User {
+import java.io.Serializable;
+
+public abstract class User implements Serializable {
     public static CustomList<User> users = new CustomList<>();
 
     protected long id;

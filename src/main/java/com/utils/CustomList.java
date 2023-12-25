@@ -1,10 +1,11 @@
 package com.utils;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class CustomList<T> {
+public class CustomList<T> implements Serializable {
     public Node<T> first = null;
     public Node<T> last = null;
     private Node<T> creator = null;

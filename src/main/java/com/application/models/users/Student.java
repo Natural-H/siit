@@ -6,6 +6,8 @@ import com.application.models.materia.Group;
 import com.application.models.materia.Materia;
 import com.utils.CustomList;
 
+import java.io.Serializable;
+
 public class Student extends User {
     public int semestre;
     public CustomList<Group> groups = new CustomList<>();

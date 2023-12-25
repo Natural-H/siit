@@ -8,17 +8,17 @@ import com.application.models.users.Student;
 import com.application.models.users.Teacher;
 import com.application.models.users.User;
 import com.application.views.LoginView;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
 import com.formdev.flatlaf.IntelliJTheme;
 import com.utils.CustomList;
 
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
-
-import static com.application.models.users.Advance.advanceHashMap;
+import java.util.HashMap;
 
 public class App {
     public static void main(String[] args) {
@@ -47,10 +47,72 @@ public class App {
         SwingUtilities.invokeLater(App::showUI);
     }
 
+    @SuppressWarnings("unchecked")
     private static void loadData() {
-        loadAdvancesAndMaterias();
-        loadUsers();
-        loadGroups();
+//        loadAdvancesAndMaterias();
+//        loadUsers();
+//        loadGroups();
+
+        File advanceFile = new File("advance.bin");
+        File materias = new File("materias.bin");
+        File users = new File("users.bin");
+        File groups = new File("groups.bin");
+
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(advanceFile.toPath())
+        )) {
+            outputStream.writeObject(Advance.advanceHashMap);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(materias.toPath())
+        )) {
+            outputStream.writeObject(Materia.materias);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(users.toPath())
+        )) {
+            outputStream.writeObject(User.users);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(groups.toPath())
+        )) {
+            outputStream.writeObject(Group.groups);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+//        try (ObjectInputStream inputStream = new ObjectInputStream(
+//                Files.newInputStream(advanceFile.toPath())
+//        )) {
+//            Advance.advanceHashMap = (HashMap<Advance.Semestre, Advance>) inputStream.readObject();
+//        } catch (IOException | ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        try (ObjectInputStream inputStream = new ObjectInputStream(
+//                Files.newInputStream(users.toPath())
+//        )) {
+//            User.users = (CustomList<User>) inputStream.readObject();
+//        } catch (IOException | ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        try (ObjectInputStream inputStream = new ObjectInputStream(
+//                Files.newInputStream(groups.toPath())
+//        )) {
+//            Group.groups = (CustomList<Group>) inputStream.readObject();
+//        } catch (IOException | ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private static void showUI() {
@@ -105,7 +167,7 @@ public class App {
     }
 
     private static void loadAdvancesAndMaterias() {
-        advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
+        Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
             {
                 materias = new Materia[]{
                         new Materia("CodeName1", "Fundamentos de Programación", 5, 1, null),
@@ -114,7 +176,7 @@ public class App {
                 };
             }
         });
-        advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
+        Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
             {
                 materias = new Materia[]{
                         new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
@@ -133,7 +195,7 @@ public class App {
                 };
             }
         });
-        advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
+        Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
             {
                 materias = new Materia[]{
                         new Materia("CodeName7", "Estructura de Datos", 5, 3,

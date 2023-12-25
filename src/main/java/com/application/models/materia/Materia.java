@@ -2,7 +2,9 @@ package com.application.models.materia;
 
 import com.utils.CustomList;
 
-public class Materia {
+import java.io.Serializable;
+
+public class Materia implements Serializable {
     public static CustomList<Materia> materias = new CustomList<>();
     public Materia[] dependencies;
     public String codeName;

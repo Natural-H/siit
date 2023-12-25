@@ -4,7 +4,9 @@ import com.application.models.users.Student;
 import com.application.models.users.Teacher;
 import com.utils.CustomList;
 
-public class Group {
+import java.io.Serializable;
+
+public class Group implements Serializable {
     public static CustomList<Group> groups = new CustomList<>();
     public CustomList<Student> students = new CustomList<>();
     public int id;

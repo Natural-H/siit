@@ -2,7 +2,9 @@ package com.application.models.materia;
 
 import com.application.models.users.Teacher;
 
-public class AssignedMateria {
+import java.io.Serializable;
+
+public class AssignedMateria implements Serializable {
     public Materia materia;
     public Teacher teacher;
     public Double[] grades;
