@@ -6,11 +6,19 @@ import java.io.Serializable;
 
 public abstract class User implements Serializable {
     public static CustomList<User> users = new CustomList<>();
+    public static long fixedId = 0;
 
     protected long id;
     protected String name;
     protected String password;
     protected Roles rol;
+
+    public User(String name, String password, Roles rol) {
+        this.id = ++fixedId;
+        this.name = name;
+        this.password = password;
+        this.rol = rol;
+    }
 
     public User(long id, String name, String password, Roles rol) {
         this.id = id;

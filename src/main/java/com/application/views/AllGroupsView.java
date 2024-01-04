@@ -65,7 +65,7 @@ public class AllGroupsView extends JPanel {
 
             for (int j = 3; j < 8; j++)
                 data[i][j] = group.horario.days[j - 3].equals(Horario.Days[j - 3]) ?
-                        new String[]{group.horario.horario, group.horario.places[j - 3]} : new String[]{"", ""};
+                        new String[]{group.horario.time, group.horario.places[j - 3]} : new String[]{"", ""};
 
             dtm.addRow(data[i]);
         }

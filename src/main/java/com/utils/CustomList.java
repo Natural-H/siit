@@ -2,6 +2,7 @@ package com.utils;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -34,6 +35,59 @@ public class CustomList<T> implements Serializable {
             last = creator;
         }
         size++;
+    }
+
+    public void remove(T item) {
+        if (first == null || item == null)
+            return;
+
+        Node<T> it = first;
+        Node<T> before = null;
+
+        while (it != null && !it.value.equals(item)) {
+            before = it;
+            it = it.next;
+        }
+
+        if (it == null)
+            return;
+
+        if (before != null)
+            before.next = it.next;
+        else
+            first = it.next;
+
+        size--;
+    }
+
+    public void remove(int index) {
+        remove(get(index));
+    }
+
+    public boolean exists(T item) {
+        Node<T> it = first;
+
+        while (it != null) {
+            if (it.value.equals(item))
+                return true;
+
+            it = it.next;
+        }
+
+        return false;
+    }
+
+    public boolean anyMatch(Function<T, Boolean> function) {
+        Node<T> it = first;
+
+        while (it != null) {
+            if (function.apply(it.value))
+                return true;
+
+            it = it.next;
+        }
+
+        return false;
     }
 
     public void forEach(Consumer<T> function) {
@@ -86,6 +140,17 @@ public class CustomList<T> implements Serializable {
         return null;
     }
 
+    public Node<T> getNode(int index) {
+        Node<T> it = first;
+
+        for (int i = 0; it != null; i++) {
+            if (index == i) return it;
+            it = it.next;
+        }
+
+        return null;
+    }
+
     public T findFirstValue(Function<T, Boolean> finderFunction) {
         Node<T> it = first;
 
@@ -100,9 +165,6 @@ public class CustomList<T> implements Serializable {
     }
 
     public <R> CustomList<R> map(Function<T, R> mappingFunction) {
-        if (first == null)
-            return null;
-
         CustomList<R> customList = new CustomList<>();
         Node<T> it = first;
 
@@ -128,10 +190,6 @@ public class CustomList<T> implements Serializable {
         return allFinds;
     }
 
-    public T[] findAllValues(Function<T, Boolean> finderFunction) {
-        return filter(finderFunction).toArray();
-    }
-
     public void clear() {
         this.first = null;
         this.last = null;
@@ -139,14 +197,14 @@ public class CustomList<T> implements Serializable {
         size = 0;
     }
 
-    public T[] toArray() {
+    public <T1> T[] toArray(T1[] arr) {
         if (first == null)
             return null;
 
 //        @SuppressWarnings("unchecked")
 //        T[] array = (T[]) new Object[size];
         @SuppressWarnings("unchecked")
-        T[] array = (T[]) Array.newInstance(first.value.getClass(), size);
+        T[] array = (T[]) Array.newInstance(arr.getClass().getComponentType(), size);
         Node<T> it = first;
 
         for (int i = 0; it != null; i++) {

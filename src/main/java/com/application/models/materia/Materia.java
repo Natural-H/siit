@@ -12,6 +12,25 @@ public class Materia implements Serializable {
     public int credits;
     public int semestre;
 
+    public enum CodeNames {
+        FundProg("CodeName1"),
+        CalcDiff("CodeName2"),
+        Etic("CodeName3"),
+        POO("CodeName4"),
+        CalcInt("CodeName5"),
+        Chemistry("CodeName6"),
+        DataStruct("CodeName7"),
+        CalcVect("CodeName8"),
+        CultEmpr("CodeName9")
+        ;
+
+        public final String codeName;
+
+        CodeNames(String codeName) {
+            this.codeName = codeName;
+        }
+    }
+
     public Materia(String codeName, String name, int credits, int semestre, Materia[] dependencies) {
         this.codeName = codeName;
         this.name = name;

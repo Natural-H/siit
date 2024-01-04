@@ -1,15 +1,24 @@
 package com.application.models.materia;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Horario implements Serializable {
-    public static String[] Horarios = new String[] {
+    public static String[] Hours = new String[] {
             "07:00 - 08:00",
             "08:00 - 09:00",
             "09:00 - 10:00",
             "10:00 - 11:00",
             "11:00 - 12:00",
             "12:00 - 13:00",
+            "13:00 - 14:00",
+            "14:00 - 15:00",
+            "15:00 - 16:00",
+            "16:00 - 17:00",
+            "17:00 - 18:00",
+            "18:00 - 19:00",
+            "19:00 - 20:00",
+            "20:00 - 21:00",
     };
 
     public static String[] Days = new String[] {
@@ -42,5 +51,23 @@ public class Horario implements Serializable {
 
     public String[] days = new String[6];
     public String[] places = new String[6];
-    public String horario = "";
+    public String time = "";
+
+    public static boolean checkCollision(Horario horario) {
+        AtomicReference<Boolean> found = new AtomicReference<>(Boolean.FALSE);
+
+        Group.groups.forEach(g -> {
+                    if (g.horario.time.equals(horario.time)) {
+                        for (int i = 0; i < horario.days.length; i++) {
+                            if ((!horario.days[i].isEmpty() && !horario.places[i].isEmpty()) && g.horario.days[i].equals(horario.days[i]) && g.horario.places[i].equals(horario.places[i])) {
+                                found.set(Boolean.TRUE);
+                                return;
+                            }
+                        }
+                    }
+                }
+        );
+
+        return found.get();
+    }
 }

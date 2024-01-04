@@ -8,7 +8,15 @@ import java.io.Serializable;
 public class Teacher extends User {
     public CustomList<Group> groups = new CustomList<>();
 
-    public Teacher(long id, String name, String password, Roles rol) {
-        super(id, name, password, rol);
+    public Teacher(String name, String password) {
+        super(name, password, Roles.Teacher);
+    }
+
+    public Teacher(long id, String name, String password) {
+        super(id, name, password, Roles.Teacher);
+    }
+
+    public static int count() {
+        return User.users.filter(u -> u.getRol().equals(Roles.Teacher)).size;
     }
 }

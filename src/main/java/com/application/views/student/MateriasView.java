@@ -46,7 +46,7 @@ public class MateriasView extends JPanel {
 
                 for (int i = 0; i < Advance.Semestre.values().length; i++) {
                     int finalI = i;
-                    AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray();
+                    AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray(new AssignedMateria[0]);
 
                     for (int j = 0; j < materias.length; j++) {
                         plainMaterias[j][i] = materias[j].materia.name + " " + materias[j].state;

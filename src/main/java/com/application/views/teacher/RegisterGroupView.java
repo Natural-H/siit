@@ -18,8 +18,8 @@ public class RegisterGroupView extends JPanel {
     private final Teacher context;
     private final DefaultComboBoxModel<String> groupsModel = new DefaultComboBoxModel<>(Group.groupNames);
     private final JComboBox<String> comboGroups = new JComboBox<>(groupsModel);
-    private final JXComboBox comboMaterias = new JXComboBox(Materia.materias.toArray());
-    private final JComboBox<String> comboHorarios = new JComboBox<>(Horario.Horarios);
+    private final JXComboBox comboMaterias = new JXComboBox(Materia.materias.toArray(new Materia[0]));
+    private final JComboBox<String> comboHorarios = new JComboBox<>(Horario.Hours);
     private final JXComboBox[] combosPlaces = new JXComboBox[6];
 
     private final JTextField txtSemestre = new JTextField(5);
@@ -84,7 +84,7 @@ public class RegisterGroupView extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1;
-        gbc.weighty = 1;
+        gbc.weighty = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
 
@@ -168,9 +168,10 @@ public class RegisterGroupView extends JPanel {
             }
         }, gbc);
 
+        gbc.weighty = 1;
         gbc.gridy++;
         gbc.gridwidth = 7;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         table.setPreferredScrollableViewportSize(new Dimension(800, 200));
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, gbc);
@@ -186,10 +187,8 @@ public class RegisterGroupView extends JPanel {
     }
 
     private void addGroup() {
-        Group newG = new Group(Group.groups.size,
-                (String) Objects.requireNonNull(comboGroups.getSelectedItem()),
+        Group newG = new Group((String) Objects.requireNonNull(comboGroups.getSelectedItem()),
                 context,
-                Integer.parseInt(txtSemestre.getText()),
                 ((Materia) Objects.requireNonNull(comboMaterias.getSelectedItem())),
                 new Horario() {
                     {
@@ -197,7 +196,7 @@ public class RegisterGroupView extends JPanel {
                             this.days[i] = checkDays[i].isSelected() ? Days[i] : "";
                             this.places[i] = checkDays[i].isSelected() ? (String) combosPlaces[i].getSelectedItem() : "";
                         }
-                        this.horario = (String) comboHorarios.getSelectedItem();
+                        this.time = (String) comboHorarios.getSelectedItem();
                     }
                 });
 
@@ -220,7 +219,7 @@ public class RegisterGroupView extends JPanel {
 
             for (int j = 3; j < 8; j++)
                 data[i][j] = group.horario.days[j - 3].equals(Horario.Days[j - 3]) ?
-                        new String[]{group.horario.horario, group.horario.places[j - 3]} : new String[]{"", ""};
+                        new String[]{group.horario.time, group.horario.places[j - 3]} : new String[]{"", ""};
 
             dtm.addRow(data[i]);
         }

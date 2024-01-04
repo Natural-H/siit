@@ -66,12 +66,12 @@ public class HorarioView extends JPanel {
 
         context.groups.forEach(g -> dtm.addRow(new Object[] {
                 new String[] {g.materia.name, g.teacher.getName()},
-                new String[] {!g.horario.days[0].isEmpty() ? g.horario.horario : "", !g.horario.days[0].isEmpty() ? g.horario.places[0] : ""},
-                new String[] {!g.horario.days[1].isEmpty() ? g.horario.horario : "", !g.horario.days[1].isEmpty() ? g.horario.places[1] : ""},
-                new String[] {!g.horario.days[2].isEmpty() ? g.horario.horario : "", !g.horario.days[2].isEmpty() ? g.horario.places[2] : ""},
-                new String[] {!g.horario.days[3].isEmpty() ? g.horario.horario : "", !g.horario.days[3].isEmpty() ? g.horario.places[3] : ""},
-                new String[] {!g.horario.days[4].isEmpty() ? g.horario.horario : "", !g.horario.days[4].isEmpty() ? g.horario.places[4] : ""},
-                new String[] {!g.horario.days[5].isEmpty() ? g.horario.horario : "", !g.horario.days[5].isEmpty() ? g.horario.places[5] : ""},
+                new String[] {!g.horario.days[0].isEmpty() ? g.horario.time : "", !g.horario.days[0].isEmpty() ? g.horario.places[0] : ""},
+                new String[] {!g.horario.days[1].isEmpty() ? g.horario.time : "", !g.horario.days[1].isEmpty() ? g.horario.places[1] : ""},
+                new String[] {!g.horario.days[2].isEmpty() ? g.horario.time : "", !g.horario.days[2].isEmpty() ? g.horario.places[2] : ""},
+                new String[] {!g.horario.days[3].isEmpty() ? g.horario.time : "", !g.horario.days[3].isEmpty() ? g.horario.places[3] : ""},
+                new String[] {!g.horario.days[4].isEmpty() ? g.horario.time : "", !g.horario.days[4].isEmpty() ? g.horario.places[4] : ""},
+                new String[] {!g.horario.days[5].isEmpty() ? g.horario.time : "", !g.horario.days[5].isEmpty() ? g.horario.places[5] : ""},
         }));
     }
 }

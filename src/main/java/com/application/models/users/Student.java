@@ -6,7 +6,7 @@ import com.application.models.materia.Group;
 import com.application.models.materia.Materia;
 import com.utils.CustomList;
 
-import java.io.Serializable;
+import java.util.Arrays;
 
 public class Student extends User {
     public int semestre;
@@ -14,8 +14,8 @@ public class Student extends User {
     public CustomList<AssignedMateria> assigned = new CustomList<>();
     public CustomList<AssignedMateria> history = new CustomList<>();
 
-    public Student(long id, String name, String password, Roles rol, int semestre) {
-        super(id, name, password, rol);
+    public Student(String name, String password, int semestre) {
+        super(name, password, Roles.Student);
         this.semestre = semestre;
 
         for (int i = 0; i < Advance.Semestre.values().length; i++) {
@@ -39,15 +39,48 @@ public class Student extends User {
         for (Group group : assignedGroups) {
             groups.add(group);
 
-            AssignedMateria assign = history.findFirstValue(m -> m.materia.name.equals(group.materia.name));
+            AssignedMateria assign = history.findFirstValue(m -> m.materia.codeName.equals(group.materia.codeName));
             assign.state = State.IN_COURSE;
             assign.grades = new Double[10];
-            assign.teacher = group.teacher;
+            Arrays.fill(assign.grades, 0.0);
+
+//            assign.teacher = group.teacher;
             assigned.add(assign);
         }
     }
 
+    public void injectMaterias(Materia[] materias) {
+        assigned.clear();
+
+        for (Materia materia : materias) {
+            AssignedMateria assign = history.findFirstValue(m -> m.materia.codeName.equals(materia.codeName));
+            assign.state = State.IN_COURSE;
+            assign.grades = new Double[10];
+            Arrays.fill(assign.grades, 0.0);
+
+            assigned.add(assign);
+        }
+    }
+
+    public void gradeMateria(Double[] grades, String code) {
+        assigned.findFirstValue(m -> m.materia.codeName.equals(code)).grades = grades;
+    }
+
+    public void registerMaterias() {
+        assigned.forEach(a -> {
+            AssignedMateria materia = history.findFirstValue(h -> h.materia.codeName.equals(a.materia.codeName));
+            materia.state = Arrays.stream(materia.grades).anyMatch(d -> d >= 70) ?
+                    State.APPROVED :
+                    State.FAILED;
+            materia.grades = a.grades;
+        });
+        assigned.clear();
+    }
+
     public boolean canTake(Materia materia) {
+        if (materia.semestre > (semestre + 1))
+            return false;
+
         if (materia.dependencies == null)
             return true;
 

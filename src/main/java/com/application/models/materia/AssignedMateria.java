@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 public class AssignedMateria implements Serializable {
     public Materia materia;
-    public Teacher teacher;
     public Double[] grades;
     public State state;
 

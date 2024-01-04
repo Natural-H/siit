@@ -3,6 +3,7 @@ package com.application;
 import com.application.models.materia.Group;
 import com.application.models.materia.Horario;
 import com.application.models.materia.Materia;
+import com.application.models.materia.Materia.CodeNames;
 import com.application.models.users.Advance;
 import com.application.models.users.Student;
 import com.application.models.users.Teacher;
@@ -19,6 +20,9 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class App {
     public static void main(String[] args) {
@@ -30,34 +34,85 @@ public class App {
 
         integers.forEach(System.out::println);
         System.out.println(integers.findFirstValue(val -> val == 3));
-        System.out.println(Arrays.toString(integers.toArray()));
+        integers.remove(2);
+        System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
         System.out.println(integers.aggregate(5, (a, next) -> a * next));
         System.out.println(integers.aggregate((a, next) -> a * next));
-        System.out.println(Arrays.toString(integers.findAllValues(value -> value == 2)));
-        System.out.println(Arrays.toString(integers.map(value -> value * 2).toArray()));
-        System.out.println(Arrays.toString(integers.map(value -> value * 2).filter(value -> value == 4).toArray()));
+//        System.out.println(Arrays.toString(integers.findAllValues(value -> value == 2)));
+        System.out.println(Arrays.toString(integers.map(value -> value * 2).toArray(new Integer[0])));
+        System.out.println(Arrays.toString(integers.map(value -> value * 2).filter(value -> value == 4).toArray(new Integer[0])));
 
         integers.clear();
 
-        System.out.println(Arrays.toString(integers.toArray()));
+        System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
 
         loadData();
         IntelliJTheme.setup(App.class.getResourceAsStream(
                 "/themes/nord.theme.json"));
         SwingUtilities.invokeLater(App::showUI);
+        System.out.println("Total Groups: " + Group.fixedId);
+    }
+
+    static File advanceFile = new File("advance.bin");
+    static File materiasFile = new File("materias.bin");
+    static File usersFile = new File("users.bin");
+    static File groupsFile = new File("groups.bin");
+
+
+    private static void loadData() {
+        boolean loadDefaults = true;
+
+        if (Stream.of(advanceFile, materiasFile, usersFile, groupsFile)
+                .anyMatch(file -> !file.exists()) || loadDefaults) {
+            loadAdvancesAndMaterias();
+            loadUsers();
+            loadGroups();
+            assignGroupsToStudents();
+
+            saveFiles();
+        } else {
+            readFiles();
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private static void loadData() {
-//        loadAdvancesAndMaterias();
-//        loadUsers();
-//        loadGroups();
+    private static void readFiles() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(
+                Files.newInputStream(advanceFile.toPath())
+        )) {
+            Advance.advanceHashMap = (HashMap<Advance.Semestre, Advance>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
-        File advanceFile = new File("advance.bin");
-        File materias = new File("materias.bin");
-        File users = new File("users.bin");
-        File groups = new File("groups.bin");
+        try (ObjectInputStream inputStream = new ObjectInputStream(
+                Files.newInputStream(materiasFile.toPath())
+        )) {
+            Materia.materias = (CustomList<Materia>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
+        try (ObjectInputStream inputStream = new ObjectInputStream(
+                Files.newInputStream(usersFile.toPath())
+        )) {
+            User.users = (CustomList<User>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (ObjectInputStream inputStream = new ObjectInputStream(
+                Files.newInputStream(groupsFile.toPath())
+        )) {
+            Group.groups = (CustomList<Group>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        User.fixedId = User.users.last.value.getId();
+    }
+
+    public static void saveFiles() {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
                 Files.newOutputStream(advanceFile.toPath())
         )) {
@@ -67,7 +122,7 @@ public class App {
         }
 
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                Files.newOutputStream(materias.toPath())
+                Files.newOutputStream(materiasFile.toPath())
         )) {
             outputStream.writeObject(Materia.materias);
         } catch (IOException e) {
@@ -75,7 +130,7 @@ public class App {
         }
 
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                Files.newOutputStream(users.toPath())
+                Files.newOutputStream(usersFile.toPath())
         )) {
             outputStream.writeObject(User.users);
         } catch (IOException e) {
@@ -83,36 +138,12 @@ public class App {
         }
 
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                Files.newOutputStream(groups.toPath())
+                Files.newOutputStream(groupsFile.toPath())
         )) {
             outputStream.writeObject(Group.groups);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-//        try (ObjectInputStream inputStream = new ObjectInputStream(
-//                Files.newInputStream(advanceFile.toPath())
-//        )) {
-//            Advance.advanceHashMap = (HashMap<Advance.Semestre, Advance>) inputStream.readObject();
-//        } catch (IOException | ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        try (ObjectInputStream inputStream = new ObjectInputStream(
-//                Files.newInputStream(users.toPath())
-//        )) {
-//            User.users = (CustomList<User>) inputStream.readObject();
-//        } catch (IOException | ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        try (ObjectInputStream inputStream = new ObjectInputStream(
-//                Files.newInputStream(groups.toPath())
-//        )) {
-//            Group.groups = (CustomList<Group>) inputStream.readObject();
-//        } catch (IOException | ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     private static void showUI() {
@@ -124,93 +155,145 @@ public class App {
         frame.setVisible(true);
     }
 
-
     private static void loadUsers() {
-        User.users.add(new Student(0, "a", "a", User.Roles.Student, 1));
-        User.users.add(new Teacher(1, "Some teacher", "b", User.Roles.Teacher));
+        Random random = new Random();
+
+        for (int i = 0; i < 80; i++)
+            User.users.add(new Student("Some poor soul " + i, "a", random.nextInt(Advance.Semestre.values().length) + 1));
+
+        User.users.add(new Teacher("Some teacher 1", "b"));
+        User.users.add(new Teacher("Some teacher 2", "b"));
+        User.users.add(new Teacher("Some teacher 3", "b"));
+        User.users.add(new Teacher("Some teacher 4", "b"));
+        User.users.add(new Teacher("Some teacher 5", "b"));
+        User.users.add(new Teacher("Some teacher 6", "b"));
     }
 
-
     private static void loadGroups() {
-        Group.groups.add(new Group(0, Group.groupNames[0],
-                (Teacher) User.users
-                        .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.materias
-                        .findFirstValue(m -> m.codeName.equals("CodeName1")),
-                new Horario() {
-                    {
-                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4], ""};
-                        this.horario = Horarios[0];
-                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7", ""};
-                    }
-                }));
+        Random rand = new Random();
+        Materia[] shuffledMaterias = Materia.materias.toArray(new Materia[0]);
 
-        Group.groups.add(new Group(1, Group.groupNames[8],
-                (Teacher) User.users
-                        .findFirstValue(t -> t.getId() == 1), 1,
-                Materia.materias
-                        .findFirstValue(m -> m.codeName.equals("CodeName7")),
-                new Horario() {
-                    {
-                        this.days = new String[]{Days[0], Days[1], Days[2], "", Days[4], ""};
-                        this.horario = Horarios[0];
-                        this.places = new String[]{"SC7", "SC7", "SC7", "SC7", "SC7", ""};
-                    }
-                }));
+        for (String name : Group.groupNames) {
+            for (int i = 0; i < shuffledMaterias.length; i++) {
+                int swapI = rand.nextInt(shuffledMaterias.length);
 
-        Group.groups.forEach(group -> User.users.filter(
-                        user -> user.getRol().equals(User.Roles.Teacher))
-                .forEach(teacher -> {
-                    if (group.teacher.getId() == teacher.getId())
-                        ((Teacher) teacher).groups.add(group);
-                }));
+                Materia temp = shuffledMaterias[swapI];
+                shuffledMaterias[swapI] = shuffledMaterias[i];
+                shuffledMaterias[i] = temp;
+            }
+
+            for (Materia materia : shuffledMaterias) {
+                if (!name.startsWith(Integer.toString(materia.semestre)))
+                    continue;
+
+                Group g = null;
+                Teacher t = null;
+
+                do {
+                    t = (Teacher) User.users
+                            .filter(u -> u.getRol().equals(User.Roles.Teacher))
+                            .get(rand.nextInt(Teacher.count()));
+
+                    g = new Group(name,
+                            t,
+                            materia,
+                            new Horario() {
+                                {
+                                    do {
+                                        this.time = Horario.Hours[rand.nextInt(Horario.Hours.length)];
+
+                                        if (materia.credits == 5) {
+                                            this.days = new String[]{Days[0], Days[1], Days[2], Days[3], Days[4], ""};
+                                        } else {
+                                            this.days = new String[]{Days[0], Days[1], Days[2], Days[3], "", ""};
+                                        }
+
+                                        Arrays.fill(this.places, Places[rand.nextInt(Places.length)]);
+                                        this.places[5] = "";
+
+                                        if (materia.credits == 4)
+                                            this.places[4] = "";
+                                    } while (Horario.checkCollision(this));
+                                }
+                            });
+                } while (Group.checkCollision(g));
+
+                Group.groups.add(g);
+                t.groups.add(g);
+            }
+        }
+    }
+
+    private static void assignGroupsToStudents() {
+        Random random = new Random();
+
+        User.users.filter(u -> u.getRol().equals(User.Roles.Student)).forEach(s -> {
+            Student student = (Student) s;
+
+            CustomList<Group> groupCustomList = Group.groups.filter(g -> g.name.startsWith(Integer.toString(student.semestre)));
+            String group = groupCustomList.get(random.nextInt(groupCustomList.size)).name;
+
+            for (int i = 0; i < student.semestre - 1; i++) {
+                Materia[] materias = Advance.advanceHashMap.get(Advance.Semestre.parseInt(i)).materias;
+                student.injectMaterias(materias);
+
+                for (Materia materia : materias) {
+                    student.gradeMateria(IntStream.range(0, 10).mapToDouble(in ->
+                            random.nextInt(46) + 55.0).boxed().toArray(Double[]::new), materia.codeName);
+                }
+
+                student.registerMaterias();
+            }
+
+            student.assignMaterias(Group.groups.filter(g -> g.name.equals(group)).toArray(new Group[0]));
+        });
     }
 
     private static void loadAdvancesAndMaterias() {
         Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE1, new Advance() {
             {
                 materias = new Materia[]{
-                        new Materia("CodeName1", "Fundamentos de Programación", 5, 1, null),
-                        new Materia("CodeName2", "Cálculo Diferencial", 5, 1, null),
-                        new Materia("CodeName3", "Ética", 4, 1, null),
+                        new Materia(CodeNames.FundProg.codeName, "Fundamentos de Programación", 5, 1, null),
+                        new Materia(CodeNames.CalcDiff.codeName, "Cálculo Diferencial", 5, 1, null),
+                        new Materia(CodeNames.Etic.codeName, "Ética", 4, 1, null),
                 };
             }
         });
         Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE2, new Advance() {
             {
                 materias = new Materia[]{
-                        new Materia("CodeName4", "Programación Orientada a Objetos", 5, 2,
+                        new Materia(CodeNames.POO.codeName, "Programación Orientada a Objetos", 5, 2,
                                 new Materia[]{
                                         Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName1")
+                                                value -> value.codeName.equals(CodeNames.FundProg.codeName)
                                         )
                                 }),
-                        new Materia("CodeName5", "Cálculo Integral", 5, 2,
+                        new Materia(CodeNames.CalcInt.codeName, "Cálculo Integral", 5, 2,
                                 new Materia[]{
                                         Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName2")
+                                                value -> value.codeName.equals(CodeNames.CalcDiff.codeName)
                                         )
                                 }),
-                        new Materia("CodeName6", "Química", 4, 2, null),
+                        new Materia(CodeNames.Chemistry.codeName, "Química", 4, 2, null),
                 };
             }
         });
         Advance.advanceHashMap.put(Advance.Semestre.SEMESTRE3, new Advance() {
             {
                 materias = new Materia[]{
-                        new Materia("CodeName7", "Estructura de Datos", 5, 3,
+                        new Materia(CodeNames.DataStruct.codeName, "Estructura de Datos", 5, 3,
                                 new Materia[]{
                                         Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName4")
+                                                value -> value.codeName.equals(CodeNames.POO.codeName)
                                         )
                                 }),
-                        new Materia("CodeName8", "Cálculo Vectorial", 5, 3,
+                        new Materia(CodeNames.CalcVect.codeName, "Cálculo Vectorial", 5, 3,
                                 new Materia[]{
                                         Materia.materias.findFirstValue(
-                                                value -> value.codeName.equals("CodeName5")
+                                                value -> value.codeName.equals(CodeNames.CalcInt.codeName)
                                         )
                                 }),
-                        new Materia("CodeName9", "Cultura Empresarial", 4, 3, null),
+                        new Materia(CodeNames.CultEmpr.codeName, "Cultura Empresarial", 4, 3, null),
                 };
             }
         });
