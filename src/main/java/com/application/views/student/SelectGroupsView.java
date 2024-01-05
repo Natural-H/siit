@@ -2,10 +2,13 @@ package com.application.views.student;
 
 import com.application.models.materia.Group;
 import com.application.models.materia.Horario;
+import com.application.models.materia.Materia;
 import com.application.models.users.Student;
 import com.application.models.users.User;
 import com.utils.CustomList;
 import com.utils.swing.MultiLineTableCellRenderer;
+import org.jdesktop.swingx.JXComboBox;
+import org.jdesktop.swingx.JXList;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -25,20 +28,65 @@ public class SelectGroupsView extends JPanel {
     };
     private JScrollPane scrollPane = new JScrollPane(table);
 
+    private DefaultComboBoxModel<Materia> assignableMaterias = new DefaultComboBoxModel<>();
+    private JXComboBox comboFilterMaterias = new JXComboBox(assignableMaterias);
+    private DefaultListModel<Group> modelToTake = new DefaultListModel<>();
+    private JXList<Group> jListToTake = new JXList<>(modelToTake);
+
     public SelectGroupsView(User user) {
         student = (Student) user;
         setLayout(new GridBagLayout());
 
         table.setRowHeight(50);
 
-        dtm.setColumnIdentifiers(new String[] {
+        dtm.setColumnIdentifiers(new String[]{
                 "Grupo", "Materia", "Semestre", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
         });
+
+        assignableMaterias.addElement(null);
+        Materia.materias.filter(m -> student.canTake(m)).forEach(assignableMaterias::addElement);
 
         MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
         table.getColumnModel().getColumn(1).setCellRenderer(renderer);
         for (int i = 3; i < 8; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        fillData();
 
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                handleJoinGroup(e);
+            }
+        });
+
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        gbc.gridheight = 1;
+        gbc.weighty = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+
+        add(scrollPane, gbc);
+
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.3;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        add(comboFilterMaterias, gbc);
+
+        gbc.gridx++;
+        JScrollPane scrollPane1 = new JScrollPane(jListToTake);
+        scrollPane1.setPreferredSize(new Dimension(150, 125));
+        add(scrollPane1, gbc);
+
+        gbc.gridx++;
+        add(new JButton("Yes"), gbc);
+    }
+
+    private void fillData() {
         CustomList<Group> availableGroups = Group.groups.filter(g -> student.canTake(g.materia));
         Object[][] data = new Object[availableGroups.size][9];
 
@@ -55,26 +103,6 @@ public class SelectGroupsView extends JPanel {
 
             dtm.addRow(data[i]);
         }
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-
-                handleJoinGroup(e);
-            }
-        });
-
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.weighty = 1;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-
-        add(scrollPane, gbc);
     }
 
     private void handleJoinGroup(MouseEvent e) {
@@ -82,13 +110,13 @@ public class SelectGroupsView extends JPanel {
             if (JOptionPane.showConfirmDialog(this, "¿Seguro que quieres unirte a este grupo?", "Confirma", JOptionPane.YES_NO_OPTION) != 0)
                 return;
 
-            Group group = Group.groups.findFirstValue(g -> g.name.equals(
+            Group group = Group.groups.find(g -> g.name.equals(
                     dtm.getValueAt(table.getSelectedRow(), 0).toString()
             ) && g.materia.name.equals(
-                    ((String[])dtm.getValueAt(table.getSelectedRow(), 1))[0]
+                    ((String[]) dtm.getValueAt(table.getSelectedRow(), 1))[0]
             ));
 
-            student.assignMaterias(new Group[] { group });
+            modelToTake.addElement(group);
         }
     }
 }

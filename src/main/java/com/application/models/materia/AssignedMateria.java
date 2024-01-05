@@ -1,7 +1,5 @@
 package com.application.models.materia;
 
-import com.application.models.users.Teacher;
-
 import java.io.Serializable;
 
 public class AssignedMateria implements Serializable {

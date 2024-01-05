@@ -1,5 +1,7 @@
 package com.application.views.student.reinscripciones;
 
+import com.application.App;
+import com.application.Environment;
 import com.application.models.users.Student;
 import com.application.models.users.User;
 import com.application.views.AllGroupsView;
@@ -26,6 +28,7 @@ public class ReinscripcionesView extends JPanel {
         tabbedPane.addTab("Selección de Materias", new SelectGroupsView(context));
         tabbedPane.addTab("Grupos cargados", new AllGroupsView());
 
+        tabbedPane.setEnabledAt(1, App.environment.state.equals(Environment.State.Registering));
         add(tabbedPane, gbc);
     }
 }

@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.models.materia.AssignedMateria;
 import com.application.models.materia.Group;
 import com.application.models.materia.Horario;
 import com.application.models.materia.Materia;
@@ -25,6 +26,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class App {
+    public static Environment environment = new Environment();
     public static void main(String[] args) {
         CustomList<Integer> integers = new CustomList<>();
         integers.add(1);
@@ -33,20 +35,21 @@ public class App {
         integers.add(3);
 
         integers.forEach(System.out::println);
-        System.out.println(integers.findFirstValue(val -> val == 3));
+        System.out.println(integers.find(val -> val == 3));
         integers.remove(2);
         System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
         System.out.println(integers.aggregate(5, (a, next) -> a * next));
         System.out.println(integers.aggregate((a, next) -> a * next));
-//        System.out.println(Arrays.toString(integers.findAllValues(value -> value == 2)));
         System.out.println(Arrays.toString(integers.map(value -> value * 2).toArray(new Integer[0])));
         System.out.println(Arrays.toString(integers.map(value -> value * 2).filter(value -> value == 4).toArray(new Integer[0])));
 
         integers.clear();
-
         System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
 
+        environment.state = Environment.State.Registering;
+        environment.loadDefaults = true;
         loadData();
+
         IntelliJTheme.setup(App.class.getResourceAsStream(
                 "/themes/nord.theme.json"));
         SwingUtilities.invokeLater(App::showUI);
@@ -60,10 +63,8 @@ public class App {
 
 
     private static void loadData() {
-        boolean loadDefaults = true;
-
         if (Stream.of(advanceFile, materiasFile, usersFile, groupsFile)
-                .anyMatch(file -> !file.exists()) || loadDefaults) {
+                .anyMatch(file -> !file.exists()) || environment.loadDefaults) {
             loadAdvancesAndMaterias();
             loadUsers();
             loadGroups();
@@ -233,19 +234,25 @@ public class App {
             CustomList<Group> groupCustomList = Group.groups.filter(g -> g.name.startsWith(Integer.toString(student.semestre)));
             String group = groupCustomList.get(random.nextInt(groupCustomList.size)).name;
 
-            for (int i = 0; i < student.semestre - 1; i++) {
+            for (int i = 1; i < student.semestre; i++) {
                 Materia[] materias = Advance.advanceHashMap.get(Advance.Semestre.parseInt(i)).materias;
                 student.injectMaterias(materias);
 
                 for (Materia materia : materias) {
                     student.gradeMateria(IntStream.range(0, 10).mapToDouble(in ->
-                            random.nextInt(46) + 55.0).boxed().toArray(Double[]::new), materia.codeName);
+                            random.nextInt(32) + 69.0).boxed().toArray(Double[]::new), materia.codeName);
                 }
 
                 student.registerMaterias();
             }
 
-            student.assignMaterias(Group.groups.filter(g -> g.name.equals(group)).toArray(new Group[0]));
+            Group.groups.filter(g -> g.name.equals(group) && student.canTake(g.materia)).forEach(student::assignMateria);
+            student.history.filter(materia -> materia.state.equals(AssignedMateria.State.FAILED))
+                            .forEach(m -> Group.groups.filter(g -> g.materia.codeName.equals(m.materia.codeName))
+                                    .forEach(available -> {
+                                        if (!student.isGroupColliding(available) && !student.isHorarioColliding(available))
+                                            student.assignMateria(available);
+                                    }));
         });
     }
 
@@ -264,13 +271,13 @@ public class App {
                 materias = new Materia[]{
                         new Materia(CodeNames.POO.codeName, "Programación Orientada a Objetos", 5, 2,
                                 new Materia[]{
-                                        Materia.materias.findFirstValue(
+                                        Materia.materias.find(
                                                 value -> value.codeName.equals(CodeNames.FundProg.codeName)
                                         )
                                 }),
                         new Materia(CodeNames.CalcInt.codeName, "Cálculo Integral", 5, 2,
                                 new Materia[]{
-                                        Materia.materias.findFirstValue(
+                                        Materia.materias.find(
                                                 value -> value.codeName.equals(CodeNames.CalcDiff.codeName)
                                         )
                                 }),
@@ -283,13 +290,13 @@ public class App {
                 materias = new Materia[]{
                         new Materia(CodeNames.DataStruct.codeName, "Estructura de Datos", 5, 3,
                                 new Materia[]{
-                                        Materia.materias.findFirstValue(
+                                        Materia.materias.find(
                                                 value -> value.codeName.equals(CodeNames.POO.codeName)
                                         )
                                 }),
                         new Materia(CodeNames.CalcVect.codeName, "Cálculo Vectorial", 5, 3,
                                 new Materia[]{
-                                        Materia.materias.findFirstValue(
+                                        Materia.materias.find(
                                                 value -> value.codeName.equals(CodeNames.CalcInt.codeName)
                                         )
                                 }),

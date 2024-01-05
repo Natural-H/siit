@@ -21,8 +21,7 @@ public class Materia implements Serializable {
         Chemistry("CodeName6"),
         DataStruct("CodeName7"),
         CalcVect("CodeName8"),
-        CultEmpr("CodeName9")
-        ;
+        CultEmpr("CodeName9");
 
         public final String codeName;
 

@@ -32,24 +32,12 @@ public class Group implements Serializable {
 
     public static boolean checkCollision(Group toCheck) {
         return Group.groups.anyMatch(group -> {
-//                    if (group.horario.time.equals(toCheck.horario.time)) {
-//                        for (int i = 0; i < toCheck.horario.days.length; i++) {
-//                            if ((!toCheck.horario.days[i].isEmpty() && !toCheck.horario.places[i].isEmpty()) &&
-//                                    group.horario.days[i].equals(toCheck.horario.days[i]) &&
-//                                    group.horario.places[i].equals(toCheck.horario.places[i])) {
-//                                found.set(Boolean.TRUE);
-//                                return;
-//                            }
-
                     if (groups.anyMatch(g -> g.name.equals(toCheck.name) &&
-//                                    g.materia.codeName.equals(toCheck.materia.codeName) &&
                             g.horario.time.equals(toCheck.horario.time))) {
                         return true;
                     }
 
                     return toCheck.teacher.groups.anyMatch(g -> g.horario.time.equals(toCheck.horario.time));
-//                        }
-//                    }
                 }
         );
     }
@@ -68,4 +56,9 @@ public class Group implements Serializable {
             "3Y3",
             "3Y4",
     };
+
+    @Override
+    public String toString() {
+        return String.format("%s - %s", name, materia.name);
+    }
 }

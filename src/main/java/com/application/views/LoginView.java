@@ -55,7 +55,7 @@ public class LoginView extends JPanel {
     }
 
     private void login() {
-        User user = User.users.findFirstValue(usr -> usr.getId() == Integer.parseInt(txtUser.getText()));
+        User user = User.users.find(usr -> usr.getId() == Integer.parseInt(txtUser.getText()));
         if (Arrays.equals(user.getPassword().toCharArray(), txtPassword.getPassword())) {
             SwingUtilities.getWindowAncestor(this).dispose();
             JFrame frame = buildFrame();

@@ -2,7 +2,6 @@ package com.utils;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -151,7 +150,7 @@ public class CustomList<T> implements Serializable {
         return null;
     }
 
-    public T findFirstValue(Function<T, Boolean> finderFunction) {
+    public T find(Function<T, Boolean> finderFunction) {
         Node<T> it = first;
 
         while (it != null) {

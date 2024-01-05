@@ -27,33 +27,36 @@ public class Student extends User {
                     {
                         this.materia = advance.materias[finalJ];
                         this.state = State.NOT_COURSED;
+                        this.grades = new Double[10];
+                        Arrays.fill(grades, 0.0);
                     }
                 });
             }
         }
     }
 
-    public void assignMaterias(Group[] assignedGroups) {
-        groups.clear();
-        assigned.clear();
-        for (Group group : assignedGroups) {
+    public void assignMateria(Group group) {
+//        groups.clear();
+//        assigned.clear();
+//        for (Group group : assignedGroups) {
             groups.add(group);
 
-            AssignedMateria assign = history.findFirstValue(m -> m.materia.codeName.equals(group.materia.codeName));
+            AssignedMateria assign = history.find(m -> m.materia.codeName.equals(group.materia.codeName));
             assign.state = State.IN_COURSE;
             assign.grades = new Double[10];
             Arrays.fill(assign.grades, 0.0);
 
 //            assign.teacher = group.teacher;
             assigned.add(assign);
-        }
+//        }
     }
 
     public void injectMaterias(Materia[] materias) {
-        assigned.clear();
-
         for (Materia materia : materias) {
-            AssignedMateria assign = history.findFirstValue(m -> m.materia.codeName.equals(materia.codeName));
+            if (!canTake(materia))
+                continue;
+
+            AssignedMateria assign = history.find(m -> m.materia.codeName.equals(materia.codeName));
             assign.state = State.IN_COURSE;
             assign.grades = new Double[10];
             Arrays.fill(assign.grades, 0.0);
@@ -63,33 +66,49 @@ public class Student extends User {
     }
 
     public void gradeMateria(Double[] grades, String code) {
-        assigned.findFirstValue(m -> m.materia.codeName.equals(code)).grades = grades;
+        AssignedMateria found = assigned.find(m -> m.materia.codeName.equals(code));
+        if (found == null)
+            return;
+
+        found.grades = grades;
     }
 
     public void registerMaterias() {
         assigned.forEach(a -> {
-            AssignedMateria materia = history.findFirstValue(h -> h.materia.codeName.equals(a.materia.codeName));
-            materia.state = Arrays.stream(materia.grades).anyMatch(d -> d >= 70) ?
+            AssignedMateria materia = history.find(h -> h.materia.codeName.equals(a.materia.codeName));
+            materia.state = Arrays.stream(materia.grades).allMatch(d -> d >= 70) ?
                     State.APPROVED :
                     State.FAILED;
             materia.grades = a.grades;
         });
         assigned.clear();
+        groups.clear();
     }
 
     public boolean canTake(Materia materia) {
         if (materia.semestre > (semestre + 1))
             return false;
 
-        if (materia.dependencies == null)
-            return true;
-
-        for (Materia dependence : materia.dependencies) {
-            AssignedMateria taken = history.findFirstValue(mat -> mat.materia.codeName.equals(dependence.codeName));
-            if (taken.state == State.NOT_COURSED || taken.state == State.FAILED)
-                return false;
+        if (materia.dependencies != null) {
+            for (Materia dependence : materia.dependencies) {
+                AssignedMateria taken = history.find(m -> m.materia.codeName.equals(dependence.codeName));
+                if (taken.state != State.APPROVED)
+                    return false;
+            }
         }
 
-        return true;
+        AssignedMateria.State actualState = history.find(m -> m.materia.codeName.equals(materia.codeName)).state;
+        return actualState.equals(State.FAILED) || actualState.equals(State.NOT_COURSED);
+    }
+
+    public boolean isHorarioColliding(Group toCheck) {
+        return groups.anyMatch(g -> g.horario.time.equals(toCheck.horario.time));
+    }
+
+    public boolean isGroupColliding(Group toCheck) {
+        return groups.anyMatch(g ->
+                g.name.equals(toCheck.name) ||
+                g.materia.codeName.equals(toCheck.materia.codeName)
+        );
     }
 }
