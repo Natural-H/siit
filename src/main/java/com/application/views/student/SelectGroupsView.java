@@ -7,7 +7,6 @@ import com.application.models.users.Student;
 import com.application.models.users.User;
 import com.utils.CustomList;
 import com.utils.swing.MultiLineTableCellRenderer;
-import org.jdesktop.swingx.JXComboBox;
 import org.jdesktop.swingx.JXList;
 
 import javax.swing.*;
@@ -28,28 +27,47 @@ public class SelectGroupsView extends JPanel {
     };
     private JScrollPane scrollPane = new JScrollPane(table);
 
-    private DefaultComboBoxModel<Materia> assignableMaterias = new DefaultComboBoxModel<>();
-    private JXComboBox comboFilterMaterias = new JXComboBox(assignableMaterias);
-    private DefaultListModel<Group> modelToTake = new DefaultListModel<>();
-    private JXList<Group> jListToTake = new JXList<>(modelToTake);
+    private DefaultComboBoxModel<Materia> comboModelMaterias = new DefaultComboBoxModel<>();
+    private JComboBox<Materia> comboFilterMaterias = new JComboBox<>(comboModelMaterias);
+    private DefaultListModel<Group> listModelToTake = new DefaultListModel<>();
+    private JXList<Group> jListToTake = new JXList<>(listModelToTake);
+    CustomList<Group> availableGroups;
+    CustomList<Group> selectableGroups;
 
     public SelectGroupsView(User user) {
         student = (Student) user;
         setLayout(new GridBagLayout());
+
+        JButton btnYes = new JButton("Añadir materias");
+        btnYes.addActionListener(l -> {
+            for (int i = 0; i < listModelToTake.size(); i++) {
+                student.assignGroup(listModelToTake.getElementAt(i));
+            }
+
+            this.setEnabled(false);
+        });
 
         table.setRowHeight(50);
 
         dtm.setColumnIdentifiers(new String[]{
                 "Grupo", "Materia", "Semestre", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
         });
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(1).setPreferredWidth(175);
+        table.getColumnModel().getColumn(2).setPreferredWidth(35);
 
-        assignableMaterias.addElement(null);
-        Materia.materias.filter(m -> student.canTake(m)).forEach(assignableMaterias::addElement);
+        availableGroups = Group.groups.filter(g -> student.canTake(g.materia) && g.hasSpace());
+        selectableGroups = availableGroups;
+
+        comboModelMaterias.addElement(null);
+        Materia.materias.filter(m -> student.canTake(m)).forEach(comboModelMaterias::addElement);
 
         MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
         table.getColumnModel().getColumn(1).setCellRenderer(renderer);
         for (int i = 3; i < 8; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+
         fillData();
+        btnYes.setEnabled(availableGroups.any());
 
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -57,6 +75,11 @@ public class SelectGroupsView extends JPanel {
                 super.mousePressed(e);
                 handleJoinGroup(e);
             }
+        });
+
+        comboFilterMaterias.addItemListener(l -> {
+            updateFilters();
+            fillData();
         });
 
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -79,19 +102,34 @@ public class SelectGroupsView extends JPanel {
 
         gbc.gridx++;
         JScrollPane scrollPane1 = new JScrollPane(jListToTake);
-        scrollPane1.setPreferredSize(new Dimension(150, 125));
+        scrollPane1.setPreferredSize(new Dimension(350, 125));
         add(scrollPane1, gbc);
 
         gbc.gridx++;
-        add(new JButton("Yes"), gbc);
+        add(btnYes, gbc);
     }
 
-    private void fillData() {
-        CustomList<Group> availableGroups = Group.groups.filter(g -> student.canTake(g.materia));
-        Object[][] data = new Object[availableGroups.size][9];
+    private void updateFilters() {
+        selectableGroups = availableGroups.filter(g -> {
+            Materia materia = (Materia) comboFilterMaterias.getSelectedItem();
 
-        for (int i = 0; i < availableGroups.size; i++) {
-            Group group = availableGroups.get(i);
+            for (int i = 0; i < listModelToTake.size(); i++) {
+                Group toCompare = listModelToTake.getElementAt(i);
+                if (toCompare.materia.codeName.equals(g.materia.codeName))
+                    return false;
+            }
+
+            return materia == null || materia.codeName.equals(g.materia.codeName);
+        });
+    }
+
+
+    private void fillData() {
+        dtm.setRowCount(0);
+        Object[][] data = new Object[selectableGroups.size][9];
+
+        for (int i = 0; i < selectableGroups.size; i++) {
+            Group group = selectableGroups.get(i);
 
             data[i][0] = group.name;
             data[i][1] = new String[]{group.materia.name, group.teacher.getName()};
@@ -116,7 +154,46 @@ public class SelectGroupsView extends JPanel {
                     ((String[]) dtm.getValueAt(table.getSelectedRow(), 1))[0]
             ));
 
-            modelToTake.addElement(group);
+            if (!group.hasSpace()) {
+                JOptionPane.showMessageDialog(this, "¡No queda espacio en este grupo!", "Sin espacio!", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            CustomList<Group> toCheck = jListToCustomList();
+
+            if (isHorarioColliding(toCheck, group)) {
+                JOptionPane.showMessageDialog(this, "¡Hay horarios superpuestos!", "Colisión!", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (isGroupColliding(toCheck, group)) {
+                JOptionPane.showMessageDialog(this, "¡Ya estás en un grupo así!", "Colisión!", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            listModelToTake.addElement(group);
+            updateFilters();
+            fillData();
         }
+    }
+
+    public boolean isHorarioColliding(CustomList<Group> groups, Group toCheck) {
+        return groups.anyMatch(g -> g.horario.time.equals(toCheck.horario.time));
+    }
+
+    public boolean isGroupColliding(CustomList<Group> groups, Group toCheck) {
+        return groups.anyMatch(g ->
+                g.name.equals(toCheck.name) ||
+                        g.materia.codeName.equals(toCheck.materia.codeName)
+        );
+    }
+
+    public CustomList<Group> jListToCustomList() {
+        CustomList<Group> groups = new CustomList<>();
+
+        for (int i = 0; i < listModelToTake.size(); i++)
+            groups.add(listModelToTake.getElementAt(i));
+
+        return groups;
     }
 }

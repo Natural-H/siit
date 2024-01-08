@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.models.users.User;
+import com.application.views.admin.AdminView;
 import com.application.views.student.StudentView;
 import com.application.views.teacher.TeacherView;
 
@@ -43,7 +44,9 @@ public class LoginView extends JPanel {
         gbc.gridx = 0;
         gbc.gridy++;
         add(new JButton("Cerrar") {
-
+            {
+                addActionListener(l -> SwingUtilities.getWindowAncestor(LoginView.this).dispose());
+            }
         }, gbc);
 
         gbc.gridx++;
@@ -66,6 +69,9 @@ public class LoginView extends JPanel {
                     break;
                 case Teacher:
                     frame.setContentPane(new TeacherView(user));
+                    break;
+                case Admin:
+                    frame.setContentPane(new AdminView(user));
                     break;
             }
 

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class CustomList<T> implements Serializable {
     public Node<T> first = null;
@@ -63,6 +64,10 @@ public class CustomList<T> implements Serializable {
         remove(get(index));
     }
 
+    public boolean any() {
+        return size > 0;
+    }
+
     public boolean exists(T item) {
         Node<T> it = first;
 
@@ -74,6 +79,43 @@ public class CustomList<T> implements Serializable {
         }
 
         return false;
+    }
+
+    public CustomList<T> getCopy() {
+        CustomList<T> newList = new CustomList<>();
+        forEach(newList::add);
+        return newList;
+    }
+
+    public void sort(Function3<T, T, Boolean> sortingFunction) {
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < (size - i - 1); j++)
+                if (!sortingFunction.apply(get(j), get(j + 1)))
+                    swap(j, j + 1);
+    }
+
+    public void swap(int indexItem1, int indexItem2) {
+        if (indexItem1 >= indexItem2 || Stream.of(indexItem1, indexItem2).anyMatch(i -> i < 0 || i >= size)) return;
+
+        Node<T> node1 = getNode(indexItem1);
+        Node<T> before1 = getNode(indexItem1 - 1);
+
+        Node<T> node2 = getNode(indexItem2);
+        Node<T> before2 = getNode(indexItem2 - 1);
+
+        Node<T> temp = node2.next;
+
+        before2.next = node1;
+        if (before1 == null) first = node2;
+        else before1.next = node2;
+
+        node2.next = node1.next;
+        node1.next = temp;
+
+        if (indexItem2 == size - 1) {
+            last = node1;
+            last.next = null;
+        }
     }
 
     public boolean anyMatch(Function<T, Boolean> function) {
@@ -140,6 +182,7 @@ public class CustomList<T> implements Serializable {
     }
 
     public Node<T> getNode(int index) {
+        if (index < 0 || index >= size) return null;
         Node<T> it = first;
 
         for (int i = 0; it != null; i++) {
@@ -200,8 +243,6 @@ public class CustomList<T> implements Serializable {
         if (first == null)
             return null;
 
-//        @SuppressWarnings("unchecked")
-//        T[] array = (T[]) new Object[size];
         @SuppressWarnings("unchecked")
         T[] array = (T[]) Array.newInstance(arr.getClass().getComponentType(), size);
         Node<T> it = first;

@@ -1,8 +1,6 @@
 package com.application.views.student;
 
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
@@ -14,25 +12,23 @@ import com.application.models.users.User;
 import com.utils.swing.MultiLineTableCellRenderer;
 
 public class HorarioView extends JPanel {
-    private Student context;
-    private GridBagConstraints gbc = new GridBagConstraints();
-    private JLabel lbTitle = new JLabel("Materias");
+    private final Student context;
 
-    private DefaultTableModel dtm = new DefaultTableModel() {
+    private final DefaultTableModel dtm = new DefaultTableModel() {
         public boolean isCellEditable(int row, int column) {
             return false;
         }
     };
-    private JTable table = new JTable(dtm);
-    private JScrollPane scrollPane = new JScrollPane(table);
 
     public HorarioView(User user) {
         context = (Student) user;
 
-        dtm.setDataVector(null, new String[]{
+        dtm.setColumnIdentifiers(new String[] {
                 "Materia y Profesor", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
         });
+        JTable table = new JTable(dtm);
         table.setRowHeight(50);
+        table.getTableHeader().setReorderingAllowed(false);
         MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
         for (int i = 0; i < 7; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
 
@@ -44,20 +40,26 @@ public class HorarioView extends JPanel {
             }
         });
 
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 12, 5, 5);
 
+        JLabel lbTitle = new JLabel("Mi Horario");
         lbTitle.setFont(lbTitle.getFont().deriveFont(
-                Font.PLAIN, 18f));
+                Font.PLAIN, 22f));
 
         setLayout(new GridBagLayout());
         add(lbTitle, gbc);
 
+        table.getColumnModel().getColumn(0).setPreferredWidth(175);
         gbc.gridy++;
+        gbc.weighty = 1;
+        JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, gbc);
     }
 

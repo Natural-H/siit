@@ -4,6 +4,7 @@ import com.application.models.materia.AssignedMateria;
 import com.application.models.users.Advance;
 import com.application.models.users.Student;
 import com.application.models.users.User;
+import com.utils.swing.MultiLineTableCellRenderer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -13,62 +14,60 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 public class MateriasView extends JPanel {
-    private Student context;
-    private GridBagConstraints gbc = new GridBagConstraints();
-    private DefaultTableModel dtm = new DefaultTableModel() {
+    private final Student context;
+    private final DefaultTableModel dtm = new DefaultTableModel() {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
         }
     };
-    private JTable table = new JTable(dtm);
-    private final JScrollPane scrollPane = new JScrollPane(table);
 
     public MateriasView(User user) {
         this.context = (Student) user;
-        Insets leftInsets = new Insets(5, 50, 5, 5);
-        Insets rightInsets = new Insets(5, 5, 5, 50);
-        Insets normalInsets = new Insets(5, 5, 5, 5);
         setLayout(new GridBagLayout());
 
-        String[][] plainMaterias = new String[Advance.Semestre.values().length][3];
+        Object[][] plainMaterias = new Object[Advance.Semestre.values().length][3];
 
-//        for (int i = 0; i < Advance.Semestre.values().length; i++) {
-//            Advance advance = Advance.advanceHashMap.get(Advance.Semestre.values()[i]);
-//            for (int j = 0; j < advance.materias.length; j++)
-//                plainMaterias[j][i] = advance.materias[j].nombre;
-//        }
+        JTable table = new JTable(dtm);
+        table.setRowHeight(50);
+        table.getTableHeader().setReorderingAllowed(false);
+        MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
+        dtm.setColumnIdentifiers(new String[]{
+                "Semestre 1", "Semestre 2", "Semestre 3"
+        });
+
+        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++)
+            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
 
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
                 super.componentShown(e);
 
+                dtm.setRowCount(0);
                 for (int i = 0; i < Advance.Semestre.values().length; i++) {
                     int finalI = i;
                     AssignedMateria[] materias = context.history.filter(mat -> mat.materia.semestre == (finalI + 1)).toArray(new AssignedMateria[0]);
 
                     for (int j = 0; j < materias.length; j++) {
-                        plainMaterias[j][i] = materias[j].materia.name + " " + materias[j].state;
+                        plainMaterias[j][i] = new String[]{materias[j].materia.name, String.valueOf(materias[j].state)};
                     }
                 }
 
-                dtm.setDataVector(plainMaterias, new String[]{
-                        "Semestre 1", "Semestre 2", "Semestre 3"
-                });
+                for (int i = 0; i < plainMaterias[0].length; i++) dtm.addRow(plainMaterias[i]);
             }
         });
 
+//        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+//        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+//        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++)
+//            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
 
-        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++)
-            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-
-        table.setRowHeight(50);
+//        table.setRowHeight(50);
         table.setPreferredScrollableViewportSize(new Dimension(800, 400));
 
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 50, 5, 50);
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -77,6 +76,7 @@ public class MateriasView extends JPanel {
         gbc.gridheight = 1;
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, gbc);
     }
 }

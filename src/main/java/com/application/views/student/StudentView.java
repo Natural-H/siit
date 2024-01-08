@@ -26,9 +26,9 @@ public class StudentView extends JPanel {
 
         tabbedPane.addTab("Información Personal", new PersonalInfoView(user));
         tabbedPane.addTab("Horarios", new HorarioView(user));
-        tabbedPane.addTab("Calificaciones Parciales", new JPanel());
-        tabbedPane.addTab("Avance Reticular", new MateriasView(user));
+        tabbedPane.addTab("Calificaciones Parciales", new PartialGradesView(user));
         tabbedPane.addTab("Kárdex", new HistoryView(user));
+        tabbedPane.addTab("Avance Reticular", new MateriasView(user));
         tabbedPane.addTab("Reinscripciones", new ReinscripcionesView(user));
 
         add(tabbedPane, gbc);

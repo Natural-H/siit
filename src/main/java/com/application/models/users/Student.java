@@ -35,10 +35,11 @@ public class Student extends User {
         }
     }
 
-    public void assignMateria(Group group) {
+    public void assignGroup(Group group) {
 //        groups.clear();
 //        assigned.clear();
 //        for (Group group : assignedGroups) {
+            if (!group.tryAdd(this)) return;
             groups.add(group);
 
             AssignedMateria assign = history.find(m -> m.materia.codeName.equals(group.materia.codeName));
@@ -70,7 +71,7 @@ public class Student extends User {
         if (found == null)
             return;
 
-        found.grades = grades;
+        System.arraycopy(grades, 0, found.grades, 0, grades.length);
     }
 
     public void registerMaterias() {
@@ -110,5 +111,10 @@ public class Student extends User {
                 g.name.equals(toCheck.name) ||
                 g.materia.codeName.equals(toCheck.materia.codeName)
         );
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

@@ -27,7 +27,7 @@ public class Group implements Serializable {
         this.semestre = materia.semestre;
         this.materia = materia;
         this.horario = horario;
-        this.maxSize = 30;
+        this.maxSize = 12;
     }
 
     public static boolean checkCollision(Group toCheck) {
@@ -42,23 +42,37 @@ public class Group implements Serializable {
         );
     }
 
+    public boolean tryAdd(Student student) {
+        if (!hasSpace()) return false;
+
+        students.add(student);
+        return true;
+    }
+
+    public boolean hasSpace() {
+        return students.size < maxSize;
+    }
+
     public static String[] groupNames = {
             "1Y1",
             "1Y2",
             "1Y3",
             "1Y4",
+            "1Y5",
             "2Y1",
             "2Y2",
             "2Y3",
             "2Y4",
+            "2Y5",
             "3Y1",
             "3Y2",
             "3Y3",
             "3Y4",
+            "3Y5",
     };
 
     @Override
     public String toString() {
-        return String.format("%s - %s", name, materia.name);
+        return String.format("%s - %s, %s: %s ", name, materia.name, teacher.getName(), horario.time);
     }
 }

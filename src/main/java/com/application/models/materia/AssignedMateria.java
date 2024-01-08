@@ -11,6 +11,22 @@ public class AssignedMateria implements Serializable {
         APPROVED,
         FAILED,
         IN_COURSE,
-        NOT_COURSED
+        NOT_COURSED;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case APPROVED:
+                    return "Aprobado";
+                case FAILED:
+                    return "Reprobado";
+                case IN_COURSE:
+                    return "Cursando";
+                case NOT_COURSED:
+                    return "Sin Cursar";
+                default:
+                    return "";
+            }
+        }
     }
 }

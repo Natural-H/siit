@@ -31,7 +31,6 @@ public class RegisterGroupView extends JPanel {
             return false;
         }
     };
-    private JTable table = new JTable(dtm);
 
     public RegisterGroupView(User user) {
         this.context = (Teacher) user;
@@ -71,10 +70,17 @@ public class RegisterGroupView extends JPanel {
         comboMaterias.addItemListener(e -> {
             Materia materia = (Materia) e.getItem();
             txtSemestre.setText(String.valueOf(materia.semestre));
+            checkDays[4].setSelected(materia.credits == 5);
+            combosPlaces[4].setEnabled(materia.credits == 5);
+
             updateGroups();
         });
 
         MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
+        JTable table = new JTable(dtm);
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(1).setPreferredWidth(175);
+        table.getColumnModel().getColumn(2).setPreferredWidth(45);
         for (int i = 3; i < 8; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         table.setRowHeight(50);
         loadMyGroups();
@@ -174,6 +180,7 @@ public class RegisterGroupView extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         table.setPreferredScrollableViewportSize(new Dimension(800, 200));
         JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         add(scrollPane, gbc);
     }
 
@@ -200,8 +207,17 @@ public class RegisterGroupView extends JPanel {
                     }
                 });
 
+        if (context.isGroupColliding(newG)) {
+            JOptionPane.showMessageDialog(this, "¡Ya existe un grupo de esta materia con el mismo nombre!", "Colisión!", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (context.isHorarioColliding(newG)) {
+            JOptionPane.showMessageDialog(this, "¡Existen horarios solapados!", "Colisión!", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         Group.groups.add(newG);
         context.groups.add(newG);
+        JOptionPane.showMessageDialog(this, "¡Grupo añadido!", "Éxito!", JOptionPane.INFORMATION_MESSAGE);
 
         loadMyGroups();
     }

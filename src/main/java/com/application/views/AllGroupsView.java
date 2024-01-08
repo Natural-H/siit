@@ -38,7 +38,11 @@ public class AllGroupsView extends JPanel {
         MultiLineTableCellRenderer renderer = new MultiLineTableCellRenderer();
         table.getColumnModel().getColumn(1).setCellRenderer(renderer);
         for (int i = 3; i < 8; i++) table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        table.getTableHeader().setReorderingAllowed(false);
 
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(1).setPreferredWidth(175);
+        table.getColumnModel().getColumn(2).setPreferredWidth(35);
         table.setRowHeight(50);
 
         gbc.insets = new Insets(5, 5, 5, 5);

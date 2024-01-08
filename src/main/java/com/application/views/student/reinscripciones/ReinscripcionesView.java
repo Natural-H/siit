@@ -24,9 +24,8 @@ public class ReinscripcionesView extends JPanel {
 
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        tabbedPane.addTab("Deudas y pendientes", new JPanel());
-        tabbedPane.addTab("Selección de Materias", new SelectGroupsView(context));
         tabbedPane.addTab("Grupos cargados", new AllGroupsView());
+        tabbedPane.addTab("Selección de Materias", new SelectGroupsView(context));
 
         tabbedPane.setEnabledAt(1, App.environment.state.equals(Environment.State.Registering));
         add(tabbedPane, gbc);

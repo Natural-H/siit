@@ -5,19 +5,13 @@ import com.application.models.materia.Group;
 import com.application.models.materia.Horario;
 import com.application.models.materia.Materia;
 import com.application.models.materia.Materia.CodeNames;
-import com.application.models.users.Advance;
-import com.application.models.users.Student;
-import com.application.models.users.Teacher;
-import com.application.models.users.User;
+import com.application.models.users.*;
 import com.application.views.LoginView;
 import com.formdev.flatlaf.IntelliJTheme;
 import com.utils.CustomList;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,29 +19,16 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class App {
-    public static Environment environment = new Environment();
+public class App implements Serializable {
+    public static Environment environment;
+
+    static File advanceFile = new File("advance.bin");
+    static File materiasFile = new File("materias.bin");
+    static File usersFile = new File("users.bin");
+    static File groupsFile = new File("groups.bin");
+    static File environmentVariables = new File("env.bin");
+
     public static void main(String[] args) {
-        CustomList<Integer> integers = new CustomList<>();
-        integers.add(1);
-        integers.add(2);
-        integers.add(2);
-        integers.add(3);
-
-        integers.forEach(System.out::println);
-        System.out.println(integers.find(val -> val == 3));
-        integers.remove(2);
-        System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
-        System.out.println(integers.aggregate(5, (a, next) -> a * next));
-        System.out.println(integers.aggregate((a, next) -> a * next));
-        System.out.println(Arrays.toString(integers.map(value -> value * 2).toArray(new Integer[0])));
-        System.out.println(Arrays.toString(integers.map(value -> value * 2).filter(value -> value == 4).toArray(new Integer[0])));
-
-        integers.clear();
-        System.out.println(Arrays.toString(integers.toArray(new Integer[0])));
-
-        environment.state = Environment.State.Registering;
-        environment.loadDefaults = true;
         loadData();
 
         IntelliJTheme.setup(App.class.getResourceAsStream(
@@ -56,13 +37,17 @@ public class App {
         System.out.println("Total Groups: " + Group.fixedId);
     }
 
-    static File advanceFile = new File("advance.bin");
-    static File materiasFile = new File("materias.bin");
-    static File usersFile = new File("users.bin");
-    static File groupsFile = new File("groups.bin");
-
 
     private static void loadData() {
+        if (!environmentVariables.exists()) {
+            environment = new Environment();
+            environment.state = Environment.State.MidSemester;
+            environment.loadDefaults = true;
+            writeEnvVars();
+        } else {
+            readEnvVars();
+        }
+
         if (Stream.of(advanceFile, materiasFile, usersFile, groupsFile)
                 .anyMatch(file -> !file.exists()) || environment.loadDefaults) {
             loadAdvancesAndMaterias();
@@ -70,9 +55,34 @@ public class App {
             loadGroups();
             assignGroupsToStudents();
 
+            environment = new Environment();
+            environment.state = Environment.State.MidSemester;
+            environment.loadDefaults = true;
+            writeEnvVars();
+
             saveFiles();
         } else {
             readFiles();
+        }
+    }
+
+    public static void readEnvVars() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(
+                Files.newInputStream(environmentVariables.toPath())
+        )) {
+            environment = (Environment) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeEnvVars() {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(environmentVariables.toPath())
+        )) {
+            outputStream.writeObject(environment);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -110,7 +120,7 @@ public class App {
             throw new RuntimeException(e);
         }
 
-        User.fixedId = User.users.last.value.getId();
+        Group.fixedId = Group.groups.last != null ? Math.max(environment.lastGroupId, Group.groups.last.value.id) : environment.lastGroupId;
     }
 
     public static void saveFiles() {
@@ -156,8 +166,9 @@ public class App {
         frame.setVisible(true);
     }
 
-    private static void loadUsers() {
+    public static void loadUsers() {
         Random random = new Random();
+        User.users.add(new Admin(0, "God", "a"));
 
         for (int i = 0; i < 80; i++)
             User.users.add(new Student("Some poor soul " + i, "a", random.nextInt(Advance.Semestre.values().length) + 1));
@@ -170,11 +181,23 @@ public class App {
         User.users.add(new Teacher("Some teacher 6", "b"));
     }
 
-    private static void loadGroups() {
+    public static void loadNewUsers() {
+        Random random = new Random();
+
+        for (int i = 0; i < random.nextInt(35) + 10; i++)
+            User.users.add(new Student("Some poor soul " + User.fixedId, "a", 1));
+    }
+
+    public static void loadGroups() {
         Random rand = new Random();
         Materia[] shuffledMaterias = Materia.materias.toArray(new Materia[0]);
 
-        for (String name : Group.groupNames) {
+        for (int it = 0; it < Group.groupNames.length; it++) {
+            String name = Group.groupNames[it];
+
+            if (Arrays.asList("1Y5", "2Y5", "3Y5").contains(name))
+                continue;
+
             for (int i = 0; i < shuffledMaterias.length; i++) {
                 int swapI = rand.nextInt(shuffledMaterias.length);
 
@@ -225,33 +248,46 @@ public class App {
         }
     }
 
-    private static void assignGroupsToStudents() {
+    public static void assignGroupsToStudents() {
         Random random = new Random();
 
         User.users.filter(u -> u.getRol().equals(User.Roles.Student)).forEach(s -> {
-            Student student = (Student) s;
+            Student student = ((Student) s);
+            if (student.groups.any())
+                return;
 
-            CustomList<Group> groupCustomList = Group.groups.filter(g -> g.name.startsWith(Integer.toString(student.semestre)));
-            String group = groupCustomList.get(random.nextInt(groupCustomList.size)).name;
+            student.assigned.clear();
+            student.groups.clear();
 
-            for (int i = 1; i < student.semestre; i++) {
-                Materia[] materias = Advance.advanceHashMap.get(Advance.Semestre.parseInt(i)).materias;
-                student.injectMaterias(materias);
+            if (student.semestre <= Advance.advanceHashMap.size()) {
+                CustomList<Group> groupCustomList = Group.groups.filter(g -> g.name.startsWith(Integer.toString(student.semestre)));
+                String group = groupCustomList.get(random.nextInt(groupCustomList.size)).name;
 
-                for (Materia materia : materias) {
-                    student.gradeMateria(IntStream.range(0, 10).mapToDouble(in ->
-                            random.nextInt(32) + 69.0).boxed().toArray(Double[]::new), materia.codeName);
+                for (int i = 1; i < student.semestre; i++) {
+                    Materia[] materias = Stream.of(Advance.advanceHashMap.get(Advance.Semestre.parseInt(i)).materias)
+                            .filter(m -> student.canTake(m) &&
+                                    Arrays.stream(student.history.find(am -> am.materia.codeName.equals(m.codeName)).grades).noneMatch(g -> g != 0))
+                            .toArray(Materia[]::new);
+
+                    student.injectMaterias(materias);
+
+                    for (Materia materia : materias) {
+                        student.gradeMateria(IntStream.range(0, 10).mapToDouble(in ->
+                                random.nextInt(32) + 69.0).boxed().toArray(Double[]::new), materia.codeName);
+                    }
+
+                    student.registerMaterias();
                 }
 
-                student.registerMaterias();
+                Group.groups.filter(g -> g.name.equals(group) && student.canTake(g.materia)).forEach(student::assignGroup);
             }
 
-            Group.groups.filter(g -> g.name.equals(group) && student.canTake(g.materia)).forEach(student::assignMateria);
-            student.history.filter(materia -> materia.state.equals(AssignedMateria.State.FAILED))
-                            .forEach(m -> Group.groups.filter(g -> g.materia.codeName.equals(m.materia.codeName))
+            student.history.filter(materia -> student.canTake(materia.materia))
+                    .forEach(m ->
+                            Group.groups.filter(g -> g.materia.codeName.equals(m.materia.codeName))
                                     .forEach(available -> {
-                                        if (!student.isGroupColliding(available) && !student.isHorarioColliding(available))
-                                            student.assignMateria(available);
+                                        if (!student.isGroupColliding(available) && !student.isHorarioColliding(available) && available.hasSpace())
+                                            student.assignGroup(available);
                                     }));
         });
     }

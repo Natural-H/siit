@@ -6,6 +6,7 @@ import com.application.models.users.User;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -21,6 +22,10 @@ public class PersonalInfoView extends JPanel {
     public PersonalInfoView(User user) {
         context = user;
         setLayout(new GridBagLayout());
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(5, 5, 5, 5),
+                BorderFactory.createTitledBorder("Información del alumno")
+        ));
 
         JLabel lbImage;
         try {
@@ -60,18 +65,29 @@ public class PersonalInfoView extends JPanel {
 
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridwidth = 1;
-        gbc.gridheight = 3;
-        gbc.weightx = 1;
+        gbc.gridheight = 1;
+        gbc.weightx = 0;
         gbc.weighty = 0;
-        gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.anchor = GridBagConstraints.WEST;
 
+        gbc.gridx = 0;
+        add(new JLabel("Alumno: " + user.getName()) {
+            {
+                setFont(getFont().deriveFont(22f));
+            }
+        }, gbc);
+
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.gridy++;
+        gbc.gridheight = 3;
         add(lbImage, gbc);
         gbc.gridx++;
+        gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridheight = 1;
         add(new JLabel("Número de control: "), gbc);
+        gbc.weightx = 1;
         gbc.gridx++;
         add(new JTextField(Long.toString(context.getId()), 10) {
             {
@@ -79,9 +95,11 @@ public class PersonalInfoView extends JPanel {
             }
         }, gbc);
 
+        gbc.weightx = 0;
         gbc.gridy++;
         gbc.gridx = 1;
         add(new JLabel("Nombre: "), gbc);
+        gbc.weightx = 1;
         gbc.gridx++;
         add(new JTextField(context.getName(), 25) {
             {
@@ -93,7 +111,8 @@ public class PersonalInfoView extends JPanel {
         gbc.gridy++;
         gbc.gridwidth = 2;
         gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(infoPanel[0], gbc);
     }
 
@@ -139,18 +158,22 @@ class StudentInfo extends JPanel {
                 .map(mat -> mat.grades)
                 .forEach(g -> calif.updateAndGet(v -> v + Arrays.stream(g).mapToDouble(Double::doubleValue).sum()));
 
-        double val = calif.get() / ((double)context.history.filter(mat -> mat.state == AssignedMateria.State.APPROVED).size * 10);
+        double val = calif.get() / ((double) context.history.filter(mat -> mat.state == AssignedMateria.State.APPROVED).size * 10);
         val = Double.isNaN(val) || Double.isInfinite(val) ? 0 : val;
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
+        gbc.anchor = GridBagConstraints.WEST;
 
         add(new JLabel("Semestre: " + context.semestre), gbc);
         gbc.gridy++;
-        add(new JLabel("Promedio: " + val), gbc);
+        gbc.weighty = 1;
+        add(new JLabel(String.format("Promedio: %.2f", val)), gbc);
     }
 }

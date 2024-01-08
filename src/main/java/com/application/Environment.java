@@ -1,7 +1,9 @@
 package com.application;
 
-public class Environment {
-    public enum State {
+import java.io.Serializable;
+
+public class Environment implements Serializable {
+    public enum State implements Serializable {
         MidSemester,
         Vacation,
         Registering
@@ -9,4 +11,6 @@ public class Environment {
 
     public State state;
     public boolean loadDefaults;
+    public long lastUserId;
+    public int lastGroupId;
 }

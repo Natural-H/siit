@@ -24,6 +24,7 @@ public class TeacherView extends JPanel {
 
         tabbedPane.addTab("Grupos cargados", new AllGroupsView());
         tabbedPane.addTab("Registrar nuevo grupo", new RegisterGroupView(user));
+        tabbedPane.addTab("Mis grupos", new MyGroupsView(user));
 
         add(tabbedPane, gbc);
     }
